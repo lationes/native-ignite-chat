@@ -3,13 +3,12 @@ import React, { FC, ReactElement, useEffect, useRef, useState } from "react"
 import { Image, ImageStyle, Platform, SectionList, TextStyle, View, ViewStyle } from "react-native"
 import { Drawer } from "react-native-drawer-layout"
 import { type ContentStyle } from "@shopify/flash-list"
-import { ListItem, ListView, ListViewRef, Screen, Text } from "../../components"
-import { isRTL } from "../../i18n"
-import { DemoTabParamList, DemoTabScreenProps } from "../../navigators/ChatNavigator"
-import { colors, spacing } from "../../theme"
-import { useSafeAreaInsetsStyle } from "../../utils/useSafeAreaInsetsStyle"
-import * as Demos from "./demos"
-import { DrawerIconButton } from "./DrawerIconButton"
+import { ListItem, ListView, ListViewRef, Screen, Text } from "app/components"
+import { isRTL } from "app/i18n"
+import { DemoTabParamList, DemoTabScreenProps } from "app/navigators/ChatNavigator"
+import { colors, spacing } from "app/theme"
+import { useSafeAreaInsetsStyle } from "app/utils/useSafeAreaInsetsStyle"
+import { DrawerIconButton } from "app/components/DrawerIconButton"
 
 const logo = require("../../../assets/images/logo.png")
 
@@ -175,30 +174,7 @@ export const DemoShowroomScreen: FC<DemoTabScreenProps<"DemoShowroom">> =
         <Screen preset="fixed" safeAreaEdges={["top"]} contentContainerStyle={$screenContainer}>
           <DrawerIconButton onPress={toggleDrawer} />
 
-          <SectionList
-            ref={listRef}
-            contentContainerStyle={$sectionListContentContainer}
-            stickySectionHeadersEnabled={false}
-            sections={Object.values(Demos)}
-            renderItem={({ item }) => item}
-            renderSectionFooter={() => <View style={$demoUseCasesSpacer} />}
-            ListHeaderComponent={
-              <View style={$heading}>
-                <Text preset="heading" tx="demoShowroomScreen.jumpStart" />
-              </View>
-            }
-            onScrollToIndexFailed={scrollToIndexFailed}
-            renderSectionHeader={({ section }) => {
-              return (
-                <View>
-                  <Text preset="heading" style={$demoItemName}>
-                    {section.name}
-                  </Text>
-                  <Text style={$demoItemDescription}>{section.description}</Text>
-                </View>
-              )
-            }}
-          />
+          <Text style={$title} preset="heading" text='ChatRoomView' />
         </Screen>
       </Drawer>
     )
@@ -253,4 +229,8 @@ const $demoItemDescription: TextStyle = {
 
 const $demoUseCasesSpacer: ViewStyle = {
   paddingBottom: spacing.xxl,
+}
+
+const $title: TextStyle = {
+  marginBottom: spacing.xxl,
 }

@@ -1,80 +1,182 @@
-/**
- * This Api class lets you define an API endpoint and methods to request
- * data and process it.
- *
- * See the [Backend API Integration](https://docs.infinite.red/ignite-cli/boilerplate/app/services/Services.md)
- * documentation for more details.
- */
-import { ApiResponse, ApisauceInstance, create } from "apisauce"
-import Config from "../../config"
-import { GeneralApiProblem, getGeneralApiProblem } from "./apiProblem"
-import type { ApiConfig, ApiFeedResponse } from "./api.types"
-import type { EpisodeSnapshotIn } from "../../models/Episode"
+import axios, { AxiosInstance, AxiosRequestConfig, AxiosError } from 'axios';
+import Config from "app/config";
+import { _rootStore } from "app/models";
+import AuthApi from './authorization.api';
+import { KeyValueModel, ResponseErrorData } from "app/types/common.types"
 
-/**
- * Configuring the apisauce instance.
- */
-export const DEFAULT_API_CONFIG: ApiConfig = {
-  url: Config.API_URL,
-  timeout: 10000,
+interface RetryQueueItem {
+  resolve: (value?: any) => void;
+  reject: (error?: any) => void;
+  config: AxiosRequestConfig;
 }
 
-/**
- * Manages all requests to the API. You can use this class to build out
- * various requests that you need to call from your backend API.
- */
-export class Api {
-  apisauce: ApisauceInstance
-  config: ApiConfig
+interface MethodData {
+  route: string,
+  params?: object | undefined,
+  data?: object| undefined,
+  appendHeaders?: object,
+  needAuth?: boolean,
+  dataType?: 'json' | 'formData',
+}
 
-  /**
-   * Set up our API instance. Keep this lightweight!
-   */
-  constructor(config: ApiConfig = DEFAULT_API_CONFIG) {
-    this.config = config
-    this.apisauce = create({
-      baseURL: this.config.url,
-      timeout: this.config.timeout,
-      headers: {
-        Accept: "application/json",
-      },
-    })
-  }
+interface RequestData extends MethodData {
+  method: any,
+}
 
-  /**
-   * Gets a list of recent React Native Radio episodes.
-   */
-  async getEpisodes(): Promise<{ kind: "ok"; episodes: EpisodeSnapshotIn[] } | GeneralApiProblem> {
-    // make the api call
-    const response: ApiResponse<ApiFeedResponse> = await this.apisauce.get(
-      `api.json?rss_url=https%3A%2F%2Ffeeds.simplecast.com%2FhEI_f9Dx`,
-    )
+export default class Api {
+  static axiosInstance: AxiosInstance;
+  static refreshAndRetryQueue: RetryQueueItem[] = [];
+  static isRefreshing = false;
 
-    // the typical ways to die when calling an api
-    if (!response.ok) {
-      const problem = getGeneralApiProblem(response)
-      if (problem) return problem
-    }
+  static methods = {
+    GET: 'get',
+    POST: 'post',
+    PATCH: 'patch',
+    PUT: 'put',
+    DELETE: 'delete',
+  };
+  constructor() {
+    Api.axiosInstance = axios.create({
+      baseURL: Config.API_URL,
+      timeout: 1000,
+      headers: {'Accept': 'application/json'}
+    });
 
-    // transform the data into the format we are expecting
-    try {
-      const rawData = response.data
+    Api.axiosInstance.interceptors.response.use(
+      (response) => response,
+      async (error) => {
+        const originalRequest: AxiosRequestConfig = error.config;
 
-      // This is where we transform the data into the shape we expect for our MST model.
-      const episodes: EpisodeSnapshotIn[] =
-        rawData?.items.map((raw) => ({
-          ...raw,
-        })) ?? []
+        if (error.response && error.response.status === 401) {
+          if (!Api.isRefreshing) {
+            Api.isRefreshing = true;
+            try {
+              const refreshToken =  _rootStore.authenticationStore.refreshToken;
 
-      return { kind: "ok", episodes }
-    } catch (e) {
-      if (__DEV__ && e instanceof Error) {
-        console.error(`Bad data: ${e.message}\n${response.data}`, e.stack)
+              if (!refreshToken) {
+                throw new Error('Missing refresh token')
+              }
+
+              // Refresh the access token
+              const refreshData = await AuthApi.refresh({ refreshToken });
+
+              const { accessToken } = refreshData;
+
+              _rootStore.authenticationStore.setTokenPair(refreshData);
+
+              // Update the request headers with the new access token
+              error.config.headers['Authorization'] = `Bearer ${accessToken}`;
+
+              // Retry all requests in the queue with the new token
+              Api.refreshAndRetryQueue.forEach(({ config, resolve, reject }) => {
+                Api.axiosInstance
+                  .request(config)
+                  .then((response) => resolve(response))
+                  .catch((err) => reject(err));
+              });
+
+              // Clear the queue
+              Api.refreshAndRetryQueue.length = 0;
+
+              // Retry the original request
+              return Api.axiosInstance(originalRequest);
+            } catch (refreshError) {
+              // Handle token refresh error
+              // You can clear all storage and redirect the user to the login page
+              _rootStore.authenticationStore.clearAuthData();
+              throw refreshError;
+            } finally {
+              Api.isRefreshing = false;
+            }
+          }
+
+          // Add the original request to the queue
+          return new Promise<void>((resolve, reject) => {
+            Api.refreshAndRetryQueue.push({ config: originalRequest, resolve, reject });
+          });
+        }
+
+        // Return a Promise rejection if the status code is not 401
+        return Promise.reject(error);
       }
-      return { kind: "bad-data" }
+    );
+  }
+
+  static get({route, params, needAuth, appendHeaders}: MethodData) {
+    return Api.request({route, params, method: Api.methods.GET, appendHeaders, needAuth});
+  }
+
+  static put({route, data, dataType, needAuth, appendHeaders}: MethodData) {
+    return Api.request({route, data, dataType, method: Api.methods.PUT, appendHeaders, needAuth});
+  }
+
+  static patch({route, data, dataType, needAuth, appendHeaders}: MethodData) {
+    return Api.request({route, data, dataType, method: Api.methods.PATCH, appendHeaders, needAuth});
+  }
+
+  static post({route, data, dataType, needAuth, appendHeaders}: MethodData) {
+    return Api.request({route, data, dataType, method: Api.methods.POST, appendHeaders, needAuth});
+  }
+
+  static delete({route, params, needAuth, appendHeaders}: MethodData) {
+    return Api.request({route, params, method: Api.methods.DELETE, appendHeaders, needAuth});
+  }
+
+  static async request({route, params, data, method, dataType = 'json', needAuth, appendHeaders}: RequestData) {
+    let headers: any = {};
+    let sendData = { ...data } as KeyValueModel;
+
+    if (needAuth) {
+      const { accessToken } = _rootStore.authenticationStore;
+      if (accessToken) {
+        headers.Authorization = `Bearer ${accessToken}`;
+      }
     }
+
+    if (appendHeaders) {
+      headers = {...headers, ...appendHeaders};
+    }
+
+    if (data) {
+      if (dataType === 'formData') {
+        headers = { ...headers, 'Content-Type': 'multipart/form-data' };
+        const formData = new FormData;
+        for (let fieldName in sendData) {
+          formData.append(fieldName, sendData[fieldName]);
+        }
+        sendData = data;
+      }
+
+      if (dataType === 'json') {
+        headers = { ...headers, 'Ccontent-Type': 'application/json', };
+      }
+    }
+
+    return this.axiosInstance.request({
+      method,
+      url: route,
+      headers,
+      params,
+      data: sendData,
+    })
+      .then((resp) => {
+        return resp.data;
+      })
+      .catch((err) => {
+        Api.handleError(err);
+        throw err;
+      });
+  }
+
+  static handleError(error: AxiosError<ResponseErrorData>) {
+    const response = error.response;
+    const message = response?.data?.message;
+    const status = response?.status;
+
+    if (message && status) {
+      console.log(`Error:  ${message} : ${status}`)
+    }
+
+    console.log(error);
   }
 }
-
-// Singleton instance of the API for convenience
-export const api = new Api()

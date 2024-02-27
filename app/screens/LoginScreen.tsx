@@ -1,53 +1,44 @@
 import { observer } from "mobx-react-lite"
-import React, { ComponentType, FC, useEffect, useMemo, useRef, useState } from "react"
+import React, { ComponentType, FC, useMemo, useRef, useState } from "react"
 import { TextInput, TextStyle, ViewStyle } from "react-native"
 import { Button, Icon, Screen, Text, TextField, TextFieldAccessoryProps } from "../components"
 import { useStores } from "../models"
 import { AppStackScreenProps } from "../navigators"
 import { colors, spacing } from "../theme"
 
+type PageType = 'login' | 'registration';
 interface LoginScreenProps extends AppStackScreenProps<"Login"> {}
 
 export const LoginScreen: FC<LoginScreenProps> = observer(function LoginScreen(_props) {
   const authPasswordInput = useRef<TextInput>(null)
 
-  const [authPassword, setAuthPassword] = useState("")
+  const [pageType, setPageType] = useState<PageType>('login');
   const [isAuthPasswordHidden, setIsAuthPasswordHidden] = useState(true)
   const [isSubmitted, setIsSubmitted] = useState(false)
   const [attemptsCount, setAttemptsCount] = useState(0)
   const {
-    authenticationStore: { authEmail, setAuthEmail, setAuthToken, validationError },
+    authenticationStore: { login, registration, authData, setAuthData, validationError, error, setError },
   } = useStores()
 
-  useEffect(() => {
-    // Here is where you could fetch credentials from keychain or storage
-    // and pre-fill the form fields.
-    setAuthEmail("ignite@infinite.red")
-    setAuthPassword("ign1teIsAwes0m3")
-
-    // Return a "cleanup" function that React will run when the component unmounts
-    return () => {
-      setAuthPassword("")
-      setAuthEmail("")
-    }
-  }, [])
-
-  const error = isSubmitted ? validationError : ""
-
-  function login() {
+  async function handleAuthorization() {
     setIsSubmitted(true)
     setAttemptsCount(attemptsCount + 1)
 
-    if (validationError) return
+    if (Object.values(validationError).length) return
 
-    // Make a request to your server to get an authentication token.
-    // If successful, reset the fields and set the token.
-    setIsSubmitted(false)
-    setAuthPassword("")
-    setAuthEmail("")
+    if (pageType === 'login') {
+      await login();
+    } else {
+      await registration();
+    }
 
-    // We'll mock this with a fake token.
-    setAuthToken(String(Date.now()))
+    setIsSubmitted(false);
+  }
+
+  function changePageType() {
+    const newPageType = pageType === 'login' ? 'registration' : 'login';
+    setError(undefined);
+    setPageType(newPageType);
   }
 
   const PasswordRightAccessory: ComponentType<TextFieldAccessoryProps> = useMemo(
@@ -72,13 +63,14 @@ export const LoginScreen: FC<LoginScreenProps> = observer(function LoginScreen(_
       contentContainerStyle={$screenContentContainer}
       safeAreaEdges={["top", "bottom"]}
     >
-      <Text testID="login-heading" tx="loginScreen.signIn" preset="heading" style={$signIn} />
-      <Text tx="loginScreen.enterDetails" preset="subheading" style={$enterDetails} />
-      {attemptsCount > 2 && <Text tx="loginScreen.hint" size="sm" weight="light" style={$hint} />}
+      <Text testID="login-heading" tx={pageType === 'login' ? "loginScreen.signIn" : "loginScreen.signUp"} preset="heading" style={$signIn} />
+      <Text tx={pageType === 'login' ? "loginScreen.loginEnterDetails" : "loginScreen.registrationEnterDetails"} preset="subheading" style={$enterDetails} />
+      {!error && attemptsCount > 2 && <Text tx="loginScreen.hint" size="sm" weight="light" style={$hint} />}
+      {error && <Text text={error} size="sm" weight="light" style={$hint} />}
 
       <TextField
-        value={authEmail}
-        onChangeText={setAuthEmail}
+        value={authData.email}
+        onChangeText={text => setAuthData({...authData, email: text })}
         containerStyle={$textField}
         autoCapitalize="none"
         autoComplete="email"
@@ -86,15 +78,15 @@ export const LoginScreen: FC<LoginScreenProps> = observer(function LoginScreen(_
         keyboardType="email-address"
         labelTx="loginScreen.emailFieldLabel"
         placeholderTx="loginScreen.emailFieldPlaceholder"
-        helper={error}
-        status={error ? "error" : undefined}
+        helper={isSubmitted ? validationError?.email : ''}
+        status={isSubmitted && validationError?.email ? 'error' : undefined}
         onSubmitEditing={() => authPasswordInput.current?.focus()}
       />
 
       <TextField
         ref={authPasswordInput}
-        value={authPassword}
-        onChangeText={setAuthPassword}
+        value={authData.password}
+        onChangeText={text => setAuthData({...authData, password: text })}
         containerStyle={$textField}
         autoCapitalize="none"
         autoComplete="password"
@@ -103,16 +95,20 @@ export const LoginScreen: FC<LoginScreenProps> = observer(function LoginScreen(_
         labelTx="loginScreen.passwordFieldLabel"
         placeholderTx="loginScreen.passwordFieldPlaceholder"
         onSubmitEditing={login}
+        helper={isSubmitted ? validationError?.password : ''}
+        status={isSubmitted && validationError?.password ? 'error' : undefined}
         RightAccessory={PasswordRightAccessory}
       />
 
       <Button
         testID="login-button"
-        tx="loginScreen.tapToSignIn"
+        tx={pageType === 'login' ? "loginScreen.tapToSignIn" : "loginScreen.tapToSignUp"}
         style={$tapButton}
         preset="reversed"
-        onPress={login}
+        onPress={handleAuthorization}
       />
+
+      <Text onPress={changePageType} testID="toggle-link" tx={pageType === 'login' ? "loginScreen.signUp" : "loginScreen.signIn"} preset="default" style={$toggleLink} />
     </Screen>
   )
 })
@@ -141,4 +137,10 @@ const $textField: ViewStyle = {
 
 const $tapButton: ViewStyle = {
   marginTop: spacing.xs,
+}
+
+const $toggleLink: TextStyle = {
+  marginTop: spacing.xs,
+  color: colors.palette.primary400,
+  textAlign: "center",
 }

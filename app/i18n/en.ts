@@ -32,16 +32,19 @@ const en = {
   },
   loginScreen: {
     signIn: "Sign In",
-    enterDetails:
-      "Enter your details below to unlock top secret info. You'll never guess what we've got waiting. Or maybe you will; it's not rocket science here.",
+    signUp: 'Sign Up',
+    loginEnterDetails:
+      "Enter your credentials to enter our best chat app.",
+    registrationEnterDetails: "Please fill all required fields to finish registration in our best chat app",
     emailFieldLabel: "Email",
     passwordFieldLabel: "Password",
     emailFieldPlaceholder: "Enter your email address",
     passwordFieldPlaceholder: "Super secret password here",
     tapToSignIn: "Tap to sign in!",
-    hint: "Hint: you can use any email address and your favorite password :)",
+    tapToSignUp: "Tap to sign up!",
+    hint: "Hint: check if you have your Caps Lock button on :)",
   },
-  demoNavigator: {
+  chatNavigator: {
     componentsTab: "Components",
     debugTab: "Debug",
     communityTab: "Community",
@@ -108,8 +111,8 @@ const en = {
         "Double tap to listen to the episode. Double tap and hold to {{action}} this episode.",
       switch: "Switch on to only show favorites",
       favoriteAction: "Toggle Favorite",
-      favoriteIcon: "Episode not favorited",
-      unfavoriteIcon: "Episode favorited",
+      favoriteIcon: "ChatRoom not favorited",
+      unfavoriteIcon: "ChatRoom favorited",
       publishLabel: "Published {{date}}",
       durationLabel: "Duration: {{hours}} hours {{minutes}} minutes {{seconds}} seconds",
     },

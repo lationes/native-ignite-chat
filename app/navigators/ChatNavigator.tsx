@@ -12,9 +12,9 @@ import { AppStackParamList, AppStackScreenProps } from "./AppNavigator"
 
 export type DemoTabParamList = {
   DemoCommunity: undefined
-  DemoShowroom: { queryIndex?: string; itemIndex?: string }
+  DemoShowroom: { chatRoomId?: number; }
   DemoDebug: undefined
-  DemoPodcastList: undefined
+  ChatRooms: { chatRoomId?: number; }
 }
 
 /**
@@ -34,10 +34,10 @@ const Tab = createBottomTabNavigator<DemoTabParamList>()
  * Each tab is a stack navigator with its own set of screens.
  *
  * More info: https://reactnavigation.org/docs/bottom-tab-navigator/
- * @returns {JSX.Element} The rendered `DemoNavigator`.
+ * @returns {JSX.Element} The rendered `ChatNavigator`.
  */
-export function DemoNavigator() {
-  const { bottom } = useSafeAreaInsets()
+export function ChatNavigator() {
+    const { bottom } = useSafeAreaInsets()
 
   return (
     <Tab.Navigator
@@ -52,46 +52,13 @@ export function DemoNavigator() {
       }}
     >
       <Tab.Screen
-        name="DemoShowroom"
-        component={DemoShowroomScreen}
-        options={{
-          tabBarLabel: translate("demoNavigator.componentsTab"),
-          tabBarIcon: ({ focused }) => (
-            <Icon icon="components" color={focused ? colors.tint : undefined} size={30} />
-          ),
-        }}
-      />
-
-      <Tab.Screen
-        name="DemoCommunity"
-        component={DemoCommunityScreen}
-        options={{
-          tabBarLabel: translate("demoNavigator.communityTab"),
-          tabBarIcon: ({ focused }) => (
-            <Icon icon="community" color={focused ? colors.tint : undefined} size={30} />
-          ),
-        }}
-      />
-
-      <Tab.Screen
-        name="DemoPodcastList"
+        name="ChatRooms"
         component={DemoPodcastListScreen}
         options={{
-          tabBarAccessibilityLabel: translate("demoNavigator.podcastListTab"),
-          tabBarLabel: translate("demoNavigator.podcastListTab"),
+          tabBarAccessibilityLabel: translate("chatNavigator.podcastListTab"),
+          tabBarLabel: translate("chatNavigator.podcastListTab"),
           tabBarIcon: ({ focused }) => (
             <Icon icon="podcast" color={focused ? colors.tint : undefined} size={30} />
-          ),
-        }}
-      />
-
-      <Tab.Screen
-        name="DemoDebug"
-        component={DemoDebugScreen}
-        options={{
-          tabBarLabel: translate("demoNavigator.debugTab"),
-          tabBarIcon: ({ focused }) => (
-            <Icon icon="debug" color={focused ? colors.tint : undefined} size={30} />
           ),
         }}
       />

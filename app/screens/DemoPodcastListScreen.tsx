@@ -33,8 +33,8 @@ import {
 } from "../components"
 import { isRTL, translate } from "../i18n"
 import { useStores } from "../models"
-import { Episode } from "../models/Episode"
-import { DemoTabScreenProps } from "../navigators/DemoNavigator"
+import { ChatRoom } from "../models/ChatRoom"
+import { DemoTabScreenProps } from "../navigators/ChatNavigator"
 import { colors, spacing } from "../theme"
 import { delay } from "../utils/delay"
 import { openLinkInBrowser } from "../utils/openLinkInBrowser"
@@ -75,7 +75,7 @@ export const DemoPodcastListScreen: FC<DemoTabScreenProps<"DemoPodcastList">> = 
         safeAreaEdges={["top"]}
         contentContainerStyle={$screenContentContainer}
       >
-        <ListView<Episode>
+        <ListView<ChatRoom>
           contentContainerStyle={$listContentContainer}
           data={episodeStore.episodesForList.slice()}
           extraData={episodeStore.favorites.length + episodeStore.episodes.length}
@@ -144,7 +144,7 @@ const EpisodeCard = observer(function EpisodeCard({
   isFavorite,
   onPressFavorite,
 }: {
-  episode: Episode
+  episode: ChatRoom
   onPressFavorite: () => void
   isFavorite: boolean
 }) {
