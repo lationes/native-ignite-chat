@@ -44,7 +44,7 @@ const config = {
     Chat: {
       screens: {
         ChatRooms: {
-          path: "showroom/:queryIndex?/:itemIndex?",
+          path: "chatRooms/:chatRoomId?",
         },
       },
     },

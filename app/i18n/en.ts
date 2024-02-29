@@ -45,10 +45,42 @@ const en = {
     hint: "Hint: check if you have your Caps Lock button on :)",
   },
   chatNavigator: {
-    componentsTab: "Components",
-    debugTab: "Debug",
-    communityTab: "Community",
-    podcastListTab: "Podcast",
+    chatRoomsTab: "Chat Rooms",
+  },
+  chatRoomScreen: {
+    title: '{{title}}',
+    noMessagesEmptyState: {
+      heading: "This looks a bit empty",
+      content:
+        "No messages have been added yet. Send message to see it in chat!",
+    },
+    noChatRoomEmptyState: {
+      heading: "This looks a bit empty",
+      content:
+        "There is no chat room created yet. Please create new one and enjoy chatting :)",
+    },
+    noChatRoomAccessEmptyState: {
+      heading: "You don't have access for this :(",
+      content:
+        "You have no access for this chat room. Please join it first and start chatting shortly :)",
+      button: "Join room",
+    },
+    joinChatRoomButton: {
+      title: 'Join',
+    },
+    messageEditor: {
+      inputPlaceholder: 'Insert your message here',
+      buttonTitle: 'Save',
+    },
+    messageCard: {
+      updatedAt: 'Updated at: {{date}}',
+      createdAt: 'Created at: {{date}}',
+      editButtonTitle: 'Edit',
+      deleteButtonTitle: 'Remove',
+    },
+    deleteConfirmation: {
+      title: "A you sure you want to delete this message?",
+    }
   },
   demoCommunityScreen: {
     title: "Connect with the community",

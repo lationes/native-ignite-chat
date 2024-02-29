@@ -22,3 +22,8 @@ export interface ResponseErrorData {
 export interface FindManyParamsModel {
   search?: string;
 }
+
+export interface LoadingInfo {
+  action: string;
+  loading: boolean;
+}

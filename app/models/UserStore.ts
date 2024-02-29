@@ -3,28 +3,39 @@ import { withSetPropAction } from "./helpers/withSetPropAction"
 import { User, UserModel } from "app/models/User"
 import UserApi from "app/services/api/user.api"
 import { GetUsersParams } from "app/types/user.types"
+import { LoadingInfo } from "app/types/common.types"
 
 export const UserStoreModel = types
   .model("Messages")
   .props({
     users: types.optional(types.array(UserModel), []),
     error: types.maybe(types.string),
+    loading:  types.optional(types.frozen<LoadingInfo>(), { action: '', loading: false }),
   })
   .actions(withSetPropAction)
   .actions((store) => ({
     setError(error: string | undefined) {
       store.error = error;
+    },
+    setLoading(action: string, loading: boolean) {
+      store.loading = { action, loading };
     }
   }))
   .actions((store) => ({
     async getUsers(data: GetUsersParams) {
+      store.setLoading('getMany', false);
+
       const response = await UserApi.getUsers(data);
 
       if (response) {
         store.setProp("users", response)
       }
+
+      store.setLoading('', false);
     },
     async getUserById(userId: number) {
+      store.setLoading('getOne', false);
+
       const users = [...(store.users || [] as User[])];
       const response = await UserApi.getUserById(userId);
 
@@ -39,8 +50,12 @@ export const UserStoreModel = types
 
         store.setProp("users", users)
       }
+
+      store.setLoading('', false);
     },
     async deleteUser(userId: number) {
+      store.setLoading('delete', false);
+
       try {
         const users = [...(store.users || [] as User[])];
         const deleteIndex = users.findIndex(user => user.id === userId);
@@ -59,6 +74,8 @@ export const UserStoreModel = types
         }
       } catch (e) {
         store.setError(e as string);
+      } finally {
+        store.setLoading('', false);
       }
     },
   }))

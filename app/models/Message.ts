@@ -11,6 +11,8 @@ export const MessageModel = types
     content: types.string,
     authorId: types.number,
     chatRoomId: types.number,
+    createdAt: types.string,
+    updatedAt: types.maybeNull(types.string),
   })
   .actions(withSetPropAction)
 

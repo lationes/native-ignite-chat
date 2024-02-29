@@ -1,5 +1,5 @@
 import Api from "./api";
-import { TokenPairModel, AuthorizationData, RefreshTokenPayload } from "app/types/authorization.types"
+import { TokenPairModel, AuthorizationData, RefreshTokenPayload, UserTokensModel } from "app/types/authorization.types"
 import { CommonMessageResponse } from "app/types/common.types"
 
 class AuthApi extends Api {
@@ -8,11 +8,11 @@ class AuthApi extends Api {
     super();
   }
 
-  async login(data: AuthorizationData): Promise<TokenPairModel> {
+  async login(data: AuthorizationData): Promise<UserTokensModel> {
     return Api.post({ route: '/authorization/login', needAuth: false, data })
   }
 
-  async registration(data: AuthorizationData): Promise<TokenPairModel> {
+  async registration(data: AuthorizationData): Promise<UserTokensModel> {
     return Api.post({ route: '/authorization/registration', needAuth: false, data })
   }
 

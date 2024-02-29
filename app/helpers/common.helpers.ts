@@ -31,3 +31,11 @@ export function convertDateToAmericanFormat(date: string | Date) {
    return moment(date).format('MM-DD-YYYY');
 }
 
+export const slugify = (str: string) =>
+  str
+    .toLowerCase()
+    .trim()
+    .replace(/[^\w\s-]/g, "")
+    .replace(/[\s_-]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+

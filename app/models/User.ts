@@ -9,10 +9,12 @@ export const UserModel = types
   .props({
     id: types.number,
     email: types.string,
-    avatar: types.string,
-    banned: types.boolean,
-    banReason: types.string,
+    avatar: types.maybeNull(types.string),
+    banned: types.maybeNull(types.boolean),
+    banReason: types.maybeNull(types.string),
     role: types.string,
+    createdAt: types.string,
+    updatedAt: types.maybeNull(types.string),
 })
 .actions(withSetPropAction)
 

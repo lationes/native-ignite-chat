@@ -5,15 +5,11 @@ import { TextStyle, ViewStyle } from "react-native"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
 import { Icon } from "../components"
 import { translate } from "../i18n"
-import { DemoCommunityScreen, DemoShowroomScreen, DemoDebugScreen } from "../screens"
-import { DemoPodcastListScreen } from "../screens/DemoPodcastListScreen"
 import { colors, spacing, typography } from "../theme"
 import { AppStackParamList, AppStackScreenProps } from "./AppNavigator"
+import { ChatRoomScreen } from "app/screens/ChatRoomsScreen/ChatRoomsScreen"
 
-export type DemoTabParamList = {
-  DemoCommunity: undefined
-  DemoShowroom: { chatRoomId?: number; }
-  DemoDebug: undefined
+export type ChatTabParamList = {
   ChatRooms: { chatRoomId?: number; }
 }
 
@@ -22,12 +18,12 @@ export type DemoTabParamList = {
  *
  * More info: https://reactnavigation.org/docs/typescript/#organizing-types
  */
-export type DemoTabScreenProps<T extends keyof DemoTabParamList> = CompositeScreenProps<
-  BottomTabScreenProps<DemoTabParamList, T>,
+export type ChatTabScreenProps<T extends keyof ChatTabParamList> = CompositeScreenProps<
+  BottomTabScreenProps<ChatTabParamList, T>,
   AppStackScreenProps<keyof AppStackParamList>
 >
 
-const Tab = createBottomTabNavigator<DemoTabParamList>()
+const Tab = createBottomTabNavigator<ChatTabParamList>()
 
 /**
  * This is the main navigator for the demo screens with a bottom tab bar.
@@ -53,10 +49,10 @@ export function ChatNavigator() {
     >
       <Tab.Screen
         name="ChatRooms"
-        component={DemoPodcastListScreen}
+        component={ChatRoomScreen}
         options={{
-          tabBarAccessibilityLabel: translate("chatNavigator.podcastListTab"),
-          tabBarLabel: translate("chatNavigator.podcastListTab"),
+          tabBarAccessibilityLabel: translate("chatNavigator.chatRoomsTab"),
+          tabBarLabel: translate("chatNavigator.chatRoomsTab"),
           tabBarIcon: ({ focused }) => (
             <Icon icon="podcast" color={focused ? colors.tint : undefined} size={30} />
           ),

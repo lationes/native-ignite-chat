@@ -4,6 +4,7 @@ import { AuthorizationData, TokenPairModel } from "app/types/authorization.types
 import AuthApi from '../services/api/authorization.api';
 import { AxiosError } from "axios/index"
 import { ResponseErrorData } from "app/types/common.types"
+import { User, UserModel } from "app/models/User"
 
 const validator: Validator = {
   required: ['email', 'password']
@@ -19,6 +20,7 @@ export const AuthenticationStoreModel = types
   .props({
     accessToken: types.maybe(types.string),
     refreshToken: types.maybe(types.string),
+    authenticatedUserId: types.maybe(types.number),
     authData: types.optional(AuthorizationDataModel, { email: '', password: ''}),
     error: types.maybe(types.string),
   })
@@ -32,6 +34,9 @@ export const AuthenticationStoreModel = types
     setTokenPair(data: TokenPairModel) {
       store.accessToken = data.accessToken;
       store.refreshToken = data.refreshToken;
+    },
+    setAuthenticatedUser(user: User) {
+      store.authenticatedUserId = user.id;
     },
     setAuthData(data: AuthorizationData) {
       store.authData = data;
@@ -76,6 +81,7 @@ export const AuthenticationStoreModel = types
 
         if (loginResponse) {
           store.setTokenPair(loginResponse);
+          store.setAuthenticatedUser(loginResponse.user);
           store.setError(undefined);
         }
       } catch (e) {
@@ -89,6 +95,7 @@ export const AuthenticationStoreModel = types
 
         if (registrationResponse) {
           store.setTokenPair(registrationResponse);
+          store.setAuthenticatedUser(registrationResponse.user);
           store.setError(undefined);
         }
       } catch (e) {
