@@ -68,6 +68,15 @@ const en = {
     joinChatRoomButton: {
       title: 'Join',
     },
+    createChatRoomButton: {
+      title: 'Create chat room',
+    },
+    chatRoomEditorPage: {
+      title: 'Create chat room',
+      chatRoomTitleLabel: 'Chat room title',
+      chatRoomTitleInputPlaceholder: 'Please enter chat room title here',
+      saveChatRoomInfoButtonTitle: 'Save',
+    },
     messageEditor: {
       inputPlaceholder: 'Insert your message here',
       buttonTitle: 'Save',
@@ -143,8 +152,8 @@ const en = {
         "Double tap to listen to the episode. Double tap and hold to {{action}} this episode.",
       switch: "Switch on to only show favorites",
       favoriteAction: "Toggle Favorite",
-      favoriteIcon: "ChatRoom not favorited",
-      unfavoriteIcon: "ChatRoom favorited",
+      favoriteIcon: "ChatRoomPage not favorited",
+      unfavoriteIcon: "ChatRoomPage favorited",
       publishLabel: "Published {{date}}",
       durationLabel: "Duration: {{hours}} hours {{minutes}} minutes {{seconds}} seconds",
     },

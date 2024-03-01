@@ -1,10 +1,11 @@
 import { Instance, SnapshotOut, types } from "mobx-state-tree"
 import { email as emailValidator, validate, Validator } from "app/helpers/validator.helpers"
-import { AuthorizationData, TokenPairModel } from "app/types/authorization.types"
+import { AuthorizationData, TokenPairModel, UserTokensModel } from "app/types/authorization.types"
 import AuthApi from '../services/api/authorization.api';
 import { AxiosError } from "axios/index"
-import { ResponseErrorData } from "app/types/common.types"
+import { LoadingInfo, ResponseErrorData } from "app/types/common.types"
 import { User, UserModel } from "app/models/User"
+import { fi } from "date-fns/locale"
 
 const validator: Validator = {
   required: ['email', 'password']
@@ -23,6 +24,7 @@ export const AuthenticationStoreModel = types
     authenticatedUserId: types.maybe(types.number),
     authData: types.optional(AuthorizationDataModel, { email: '', password: ''}),
     error: types.maybe(types.string),
+    loading:  types.optional(types.frozen<LoadingInfo>(), { action: '', loading: false }),
   })
   .actions((store) => ({
     setAccessToken(value?: string) {
@@ -48,6 +50,9 @@ export const AuthenticationStoreModel = types
     },
     setError(error: string | undefined) {
       store.error = error;
+    },
+    setLoading(action: string, loading: boolean) {
+      store.loading = { action, loading };
     }
   }))
   .views((store) => ({
@@ -75,39 +80,53 @@ export const AuthenticationStoreModel = types
     },
   }))
   .actions((store) => ({
-    async login() {
+    async login(callback?: (data?: UserTokensModel) => void) {
       try {
+        store.setLoading('login', true);
         const loginResponse = await AuthApi.login(store.authData);
 
         if (loginResponse) {
           store.setTokenPair(loginResponse);
           store.setAuthenticatedUser(loginResponse.user);
           store.setError(undefined);
+          callback && callback(loginResponse);
         }
       } catch (e) {
         const error = e as AxiosError<ResponseErrorData>;
         store.setError(error.response?.data.message as string);
+      } finally {
+        store.setLoading('', false);
       }
     },
-    async registration() {
+    async registration(callback?: (data?: UserTokensModel) => void) {
       try {
+        store.setLoading('registration', true);
         const registrationResponse = await AuthApi.registration(store.authData);
 
         if (registrationResponse) {
           store.setTokenPair(registrationResponse);
           store.setAuthenticatedUser(registrationResponse.user);
           store.setError(undefined);
+          callback && callback(registrationResponse);
         }
       } catch (e) {
         const error = e as AxiosError<ResponseErrorData>;
         store.setError(error.response?.data.message as string);
+      } finally {
+        store.setLoading('', false);
       }
     },
-    async logout() {
-      const logoutResponse = await AuthApi.logout();
+    async logout(callback?: () => void) {
+      try {
+        store.setLoading('logout', true);
+        const logoutResponse = await AuthApi.logout();
 
-      if (logoutResponse) {
-        store.clearAuthData();
+        if (logoutResponse) {
+          store.clearAuthData();
+          callback && callback();
+        }
+      } finally {
+        store.setLoading('', false);
       }
     },
   }))

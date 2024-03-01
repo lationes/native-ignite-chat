@@ -10,7 +10,7 @@ import { AppStackParamList, AppStackScreenProps } from "./AppNavigator"
 import { ChatRoomScreen } from "app/screens/ChatRoomsScreen/ChatRoomsScreen"
 
 export type ChatTabParamList = {
-  ChatRooms: { chatRoomId?: number; }
+  ChatRooms: { chatRoomId?: number | 'new'; }
 }
 
 /**

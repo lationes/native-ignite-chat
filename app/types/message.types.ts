@@ -1,7 +1,3 @@
-export interface UpdateMessagePayload {
+export interface CUMessagePayload {
   content: string;
-}
-
-export interface CreateMessagePayload extends UpdateMessagePayload{
-  chatRoomId: number;
 }

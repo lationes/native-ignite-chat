@@ -10,17 +10,19 @@ import { colors, spacing } from "app/theme"
 import { useSafeAreaInsetsStyle } from "app/utils/useSafeAreaInsetsStyle"
 import { DrawerIconButton } from "app/components/DrawerIconButton"
 import { useStores } from "app/models"
-import { ChatRoom } from "app/models/ChatRoom"
 import { observer } from "mobx-react-lite"
-import { ChatRoomView } from "app/screens/ChatRoomsScreen/components/ChatRoomView"
+import { ChatRoomPage } from "app/screens/ChatRoomsScreen/components/ChatRoomPage"
 import { JoinedChatRoom } from "app/types/chatroom.types"
+import {
+  ChatRoomInfoEditorPage,
+} from "app/screens/ChatRoomsScreen/components/ChatRoomInfoEditorPage"
 
 const logo = require("../../../assets/images/logo.png")
 
 interface ChatRoomsGroupsModel {
   id: 'joined' | 'available';
   title: string;
-  data: ChatRoom[];
+  data: JoinedChatRoom[];
 }
 
 interface ChatRoomGroupItem {
@@ -40,7 +42,7 @@ const WebListItem: FC<ChatRoomGroupItem> = ({ item, joinChatRoom }) => {
             <Button
               testID={`chat-room-join-button-${chatRoom.id}`}
               tx={ "chatRoomScreen.joinChatRoomButton.title"}
-              preset="reversed"
+              preset="filled"
               onPress={(e) => {
                 e.stopPropagation();
                 joinChatRoom(chatRoom.id)
@@ -66,7 +68,7 @@ const NativeListItem: FC<ChatRoomGroupItem> = ({ item, navigateToChatRoom, joinC
         RightComponent={<Button
           testID={`chat-room-join-button-${chatRoom.id}`}
           tx={ "chatRoomScreen.joinChatRoomButton.title"}
-          preset="reversed"
+          preset="filled"
           onPress={(e) => {
             e.stopPropagation();
             joinChatRoom(chatRoom.id)
@@ -155,7 +157,7 @@ export const ChatRoomScreen: FC<ChatTabScreenProps<"ChatRooms">> = observer(
     }, [joinedChatRooms, availableChatRooms])
 
     const currentChatRoom = useMemo(() => {
-      if (markedJoinedChatRooms && markedJoinedChatRooms?.length) {
+      if (markedJoinedChatRooms && markedJoinedChatRooms?.length && params.chatRoomId !== 'new') {
         return markedJoinedChatRooms.find(chatRoom => chatRoom.id === Number(params.chatRoomId)) || null;
       }
 
@@ -174,7 +176,7 @@ export const ChatRoomScreen: FC<ChatTabScreenProps<"ChatRooms">> = observer(
       return () => timeout.current && clearTimeout(timeout.current)
     }, [])
 
-    const navigateToChatRoom = (chatRoomId: number) => {
+    const navigateToChatRoom = (chatRoomId: number | 'new') => {
       navigation.setParams({
         chatRoomId: chatRoomId,
       })
@@ -211,6 +213,16 @@ export const ChatRoomScreen: FC<ChatTabScreenProps<"ChatRooms">> = observer(
                 <ShowroomListItem {...{ item, joinChatRoom, navigateToChatRoom }} />
               )}
             />
+
+            <Button
+              testID={`chat-room-create-button`}
+              tx={ "chatRoomScreen.createChatRoomButton.title"}
+              preset="reversed"
+              onPress={(e) => {
+                e.stopPropagation();
+                navigateToChatRoom('new');
+              }}
+            />
           </View>
         )}
       >
@@ -219,7 +231,11 @@ export const ChatRoomScreen: FC<ChatTabScreenProps<"ChatRooms">> = observer(
             <DrawerIconButton onPress={toggleDrawer} />
             <Text onPress={logout} tx={"common.logOut"} />
           </View>
-          <ChatRoomView chatRoom={currentChatRoom} />
+          { params.chatRoomId === 'new' ? (
+            <ChatRoomInfoEditorPage chatRoom={null} navigateToChatRoom={navigateToChatRoom} />
+          ) : (
+            <ChatRoomPage chatRoom={currentChatRoom} />
+          )}
         </Screen>
       </Drawer>
     )

@@ -1,10 +1,9 @@
 import { Instance, SnapshotIn, SnapshotOut, types } from "mobx-state-tree"
 import { withSetPropAction } from "./helpers/withSetPropAction"
-import { UserModel } from "app/models/User"
 import { ChatRoomUserRelationModel } from "app/types/chatroom.types"
 
 /**
- * This represents a ChatRoom of React Native Chat.
+ * This represents a ChatRoomPage of React Native Chat.
  */
 export const ChatRoomModel = types
   .model("ChatRoom")

@@ -4,6 +4,7 @@ import { User, UserModel } from "app/models/User"
 import UserApi from "app/services/api/user.api"
 import { GetUsersParams } from "app/types/user.types"
 import { LoadingInfo } from "app/types/common.types"
+import { call } from "axios"
 
 export const UserStoreModel = types
   .model("Messages")
@@ -22,38 +23,44 @@ export const UserStoreModel = types
     }
   }))
   .actions((store) => ({
-    async getUsers(data: GetUsersParams) {
-      store.setLoading('getMany', false);
+    async getUsers(data: GetUsersParams, callback?: (data?: User[]) => void) {
+      try {
+        store.setLoading('getMany', false);
 
-      const response = await UserApi.getUsers(data);
+        const response = await UserApi.getUsers(data);
 
-      if (response) {
-        store.setProp("users", response)
-      }
-
-      store.setLoading('', false);
-    },
-    async getUserById(userId: number) {
-      store.setLoading('getOne', false);
-
-      const users = [...(store.users || [] as User[])];
-      const response = await UserApi.getUserById(userId);
-
-      if (response) {
-        const findIndex = users.findIndex(user => user.id === userId);
-
-        if (findIndex !== -1) {
-          users.splice(findIndex, 1, response);
-        } else {
-          users.push(response);
+        if (response) {
+          store.setProp("users", response)
+          callback && callback(response);
         }
-
-        store.setProp("users", users)
+      } finally {
+        store.setLoading('', false);
       }
-
-      store.setLoading('', false);
     },
-    async deleteUser(userId: number) {
+    async getUserById(userId: number, callback?: (data?: User) => void) {
+      try {
+        store.setLoading('getOne', false);
+
+        const users = [...(store.users || [] as User[])];
+        const response = await UserApi.getUserById(userId);
+
+        if (response) {
+          const findIndex = users.findIndex(user => user.id === userId);
+
+          if (findIndex !== -1) {
+            users.splice(findIndex, 1, response);
+          } else {
+            users.push(response);
+          }
+
+          store.setProp("users", users)
+          callback && callback(response);
+        }
+      } finally {
+        store.setLoading('', false);
+      }
+    },
+    async deleteUser(userId: number, callback?: (data?: User) => void) {
       store.setLoading('delete', false);
 
       try {
@@ -69,8 +76,9 @@ export const UserStoreModel = types
 
         if (response) {
           const deleteIndex = users.findIndex(user => user.id === userId);
-          users.splice(deleteIndex, 0);
+          users.splice(deleteIndex, 1);
           store.setProp("users", users);
+          callback && callback(response);
         }
       } catch (e) {
         store.setError(e as string);

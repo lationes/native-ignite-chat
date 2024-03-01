@@ -2,7 +2,7 @@ import { Instance, SnapshotOut, types } from "mobx-state-tree"
 import { withSetPropAction } from "./helpers/withSetPropAction"
 import { Message, MessageModel } from "app/models/Message"
 import MessageApi from "app/services/api/message.api"
-import { CreateMessagePayload, UpdateMessagePayload } from "app/types/message.types"
+import { CUMessagePayload } from "app/types/message.types"
 import { LoadingInfo } from "app/types/common.types"
 
 export const MessageStoreModel = types
@@ -18,59 +18,72 @@ export const MessageStoreModel = types
     }
   }))
   .actions((store) => ({
-    async getMessagesByChatRoomId(chatRoomId: number) {
-      store.setLoading('get', true);
+    async getMessagesByChatRoomId(chatRoomId: number, callback?: (data?: Message[]) => void) {
+      try {
+        store.setLoading('get', true);
 
-      const response = await MessageApi.getMessagesByChatRoomId(chatRoomId);
+        const response = await MessageApi.getMessagesByChatRoomId(chatRoomId);
 
-      if (response) {
-        store.setProp("messages", response)
+        if (response) {
+          store.setProp("messages", response)
+          callback && callback(response);
+        }
+      } finally {
+        store.setLoading('', false);
       }
-
-      store.setLoading('', false);
     },
-    async createMessage(data: CreateMessagePayload) {
-      store.setLoading('create', true);
+    async createMessage(data: CUMessagePayload, callback?: (data?: Message) => void) {
+      try {
+        store.setLoading('create', true);
 
-      const messages = [...(store.messages || [] as Message[])];
+        const messages = [...(store.messages || [] as Message[])];
 
-      const response = await MessageApi.createMessage(data);
+        const response = await MessageApi.createMessage(data);
 
-      if (response) {
-        messages.push(response);
-        store.setProp("messages", messages);
+        if (response) {
+          messages.push(response);
+          store.setProp("messages", messages);
+          callback && callback(response);
+        }
+      } finally {
+        store.setLoading('', false);
       }
-
-      store.setLoading('', false);
     },
-    async updateMessage(data: UpdateMessagePayload) {
-      store.setLoading('update', true);
+    async updateMessage(messageId: number, data: CUMessagePayload, callback?: (data?: Message) => void) {
+      try {
+        store.setLoading('update', true);
 
-      const messages = [...(store.messages || [] as Message[])];
+        const messages = [...(store.messages || [] as Message[])];
 
-      const response = await MessageApi.updateMessage(data);
+        const response = await MessageApi.updateMessage(messageId, data);
 
-      if (response) {
-        messages.push(response);
-        store.setProp("messages", messages);
+        if (response) {
+          const updateIndex = messages.findIndex(message => message.id === messageId);
+          messages.splice(updateIndex, 1, response);
+          store.setProp("messages", messages);
+          callback && callback(response);
+        }
+      } finally {
+        store.setLoading('', false);
       }
-
-      store.setLoading('', false);
     },
-    async deleteMessage(messageId: number) {
-      store.setLoading('delete', true);
+    async deleteMessage(messageId: number, callback?: (data?: Message) => void) {
+      try {
+        store.setLoading('delete', true);
 
-      const messages = [...(store.messages || [] as Message[])];
+        const messages = [...(store.messages || [] as Message[])];
 
-      const response = await MessageApi.deleteMessage(messageId);
+        const response = await MessageApi.deleteMessage(messageId);
 
-      if (response) {
-        const deleteIndex = messages.findIndex(message => message.id === messageId);
-        messages.splice(deleteIndex, 0);
-        store.setProp("messages", messages);
+        if (response) {
+          const deleteIndex = messages.findIndex(message => message.id === messageId);
+          messages.splice(deleteIndex, 1);
+          store.setProp("messages", messages);
+          callback && callback(response);
+        }
+      } finally {
+        store.setLoading('', false);
       }
-
-      store.setLoading('', false);
     },
   }))
 

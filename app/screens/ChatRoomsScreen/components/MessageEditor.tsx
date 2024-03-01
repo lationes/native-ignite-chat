@@ -5,6 +5,7 @@ import { colors, spacing } from "app/theme"
 import { Button, Icon, TextField } from "app/components"
 import React, { useEffect, useState } from "react"
 import { useStores } from "app/models"
+import { KeyValueModel } from "app/types/common.types"
 
 interface IProps {
   message: Message | null;
@@ -24,6 +25,7 @@ export const MessageEditor = observer(function MessageEditor({
   } = useStores();
 
   const [textContent, setTextContent] = useState<string>(message?.content || '');
+  const [errors, setErrors] = useState<KeyValueModel | null>(null);
 
   useEffect(() => {
     if (message) {
@@ -34,6 +36,7 @@ export const MessageEditor = observer(function MessageEditor({
   const handleClose = () => {
     setOpen(false);
     setTextContent('');
+    setErrors(null);
   }
 
   const handleEditorButton = () => {
@@ -43,16 +46,27 @@ export const MessageEditor = observer(function MessageEditor({
 
     if (!isOpen) {
       setTextContent('');
+      setErrors(null);
     }
   }
 
+  const handleSetTextContent = (text: string) => {
+    setErrors(null);
+    setTextContent(text);
+  }
+
   const handleMessage = async () => {
+    if (!textContent) {
+      setErrors({ content: "Message can't be empty"})
+      return;
+    }
+
     if (message?.id && chatRoomId) {
-      await updateMessage({ content: textContent })
+      await updateMessage( message.id,{ content: textContent })
     }
 
     if (!message) {
-      await createMessage({ chatRoomId, content: textContent })
+      await createMessage({ content: textContent })
     }
 
     handleClose();
@@ -68,15 +82,15 @@ export const MessageEditor = observer(function MessageEditor({
           <TextField
             autoFocus={true}
             value={textContent}
-            onChangeText={setTextContent}
+            onChangeText={handleSetTextContent}
             containerStyle={$textField}
             autoCapitalize="none"
             autoComplete="off"
             autoCorrect={false}
             keyboardType="default"
             placeholderTx="chatRoomScreen.messageEditor.inputPlaceholder"
-            helper={!textContent ? "Message can't be empty" : ''}
-            status={!textContent ? 'error' : undefined}
+            helper={errors?.content ? errors.content : ''}
+            status={errors?.content ? 'error' : undefined}
           />
           <Button
             testID="message-editor-button"

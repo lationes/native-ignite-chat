@@ -27,8 +27,8 @@ interface IProps {
 }
 
 
-export const ChatRoomView: FC<IProps> = observer(
-  function DemoPodcastListScreen({ chatRoom }) {
+export const ChatRoomPage: FC<IProps> = observer(
+  function ChatRoomPage({ chatRoom }) {
     const {
       chatRoomStore: { loading: chatRoomLoading, connectUserToChatRoom },
       messageStore: { messages, loading: messagesLoading, getMessagesByChatRoomId, deleteMessage }
