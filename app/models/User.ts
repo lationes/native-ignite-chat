@@ -1,5 +1,4 @@
 import { Instance, SnapshotIn, SnapshotOut, types } from "mobx-state-tree"
-import { withSetPropAction } from "./helpers/withSetPropAction"
 
 /**
  * This represents a User of React Native Chat.
@@ -16,7 +15,6 @@ export const UserModel = types
     createdAt: types.string,
     updatedAt: types.maybeNull(types.string),
 })
-.actions(withSetPropAction)
 
 export interface User extends Instance<typeof UserModel> {}
 export interface UserSnapshotOut extends SnapshotOut<typeof UserModel> {}

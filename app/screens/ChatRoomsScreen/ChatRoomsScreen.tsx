@@ -12,71 +12,36 @@ import { DrawerIconButton } from "app/components/DrawerIconButton"
 import { useStores } from "app/models"
 import { observer } from "mobx-react-lite"
 import { ChatRoomPage } from "app/screens/ChatRoomsScreen/components/ChatRoomPage"
-import { JoinedChatRoom } from "app/types/chatroom.types"
 import {
   ChatRoomInfoEditorPage,
 } from "app/screens/ChatRoomsScreen/components/ChatRoomInfoEditorPage"
+import { ChatRoom } from "app/models/ChatRoom"
+import LogoutButton from "app/components/LogoutButton"
 
 const logo = require("../../../assets/images/logo.png")
 
-interface ChatRoomsGroupsModel {
-  id: 'joined' | 'available';
-  title: string;
-  data: JoinedChatRoom[];
-}
-
 interface ChatRoomGroupItem {
-  item: ChatRoomsGroupsModel;
-  joinChatRoom: (chatRoomId: number) => void;
+  item: ChatRoom;
   navigateToChatRoom: (chatRoomId: number) => void;
 }
 
-const WebListItem: FC<ChatRoomGroupItem> = ({ item, joinChatRoom }) => {
+const WebListItem: FC<ChatRoomGroupItem> = ({ item }) => {
   return (
     <View>
-      <Text style={$menuContainer} preset="bold">{item.title}</Text>
-      {item.data.map((chatRoom) => {
-        return (
-          <Link key={`chatRoom-${chatRoom.id}`} to={`/chatRooms/${chatRoom.id}`}>
-            <Text>{chatRoom.title}</Text>
-            <Button
-              testID={`chat-room-join-button-${chatRoom.id}`}
-              tx={ "chatRoomScreen.joinChatRoomButton.title"}
-              preset="filled"
-              onPress={(e) => {
-                e.stopPropagation();
-                joinChatRoom(chatRoom.id)
-              }}
-            />
-          </Link>
-        )
-      })}
+      <Link style={$webListItem} key={`chatRoom-${item.id}`} to={`/chatRooms/${item.id}`}>
+        <Text>{item.title}</Text>
+      </Link>
     </View>
   )
 }
 
-const NativeListItem: FC<ChatRoomGroupItem> = ({ item, navigateToChatRoom, joinChatRoom }) => (
+const NativeListItem: FC<ChatRoomGroupItem> = ({ item, navigateToChatRoom }) => (
   <View>
-    <Text preset="bold" style={$menuContainer}>
-      {item.title}
-    </Text>
-    {item.data.map((chatRoom) => (
-      <ListItem
-        key={`chatRoom-${chatRoom.id}`}
-        onPress={() => navigateToChatRoom(chatRoom.id)}
-        text={chatRoom.title}
-        RightComponent={<Button
-          testID={`chat-room-join-button-${chatRoom.id}`}
-          tx={ "chatRoomScreen.joinChatRoomButton.title"}
-          preset="filled"
-          onPress={(e) => {
-            e.stopPropagation();
-            joinChatRoom(chatRoom.id)
-          }}
-        />}
-
-      />
-    ))}
+    <ListItem
+      key={`chatRoom-${item.id}`}
+      onPress={() => navigateToChatRoom(item.id)}
+      text={item.title}
+    />
   </View>
 )
 
@@ -90,79 +55,18 @@ export const ChatRoomScreen: FC<ChatTabScreenProps<"ChatRooms">> = observer(
     const route = useRoute<RouteProp<ChatTabParamList, "ChatRooms">>()
     const params = route.params;
     const {
-      chatRoomStore: { chatRooms, connectUserToChatRoom },
-      authenticationStore: { authenticatedUserId, logout },
-    } = useStores()
+      chatRoomStore: { chatRooms },
+    } = useStores();
 
-    const markedJoinedChatRooms: JoinedChatRoom[] | null = useMemo(() => {
-      if (chatRooms?.length && authenticatedUserId) {
-        return chatRooms.map(chatRoom => {
-          const chatRoomUsersIds = chatRoom.users.map(user => user.id);
-          const joined =  chatRoomUsersIds.includes(authenticatedUserId);
-
-          return {
-            ...chatRoom,
-            joined,
-          }
-        })
-      }
-
-      return null;
-    }, [chatRooms, authenticatedUserId])
-
-    const joinedChatRooms = useMemo(() => {
-      if (markedJoinedChatRooms?.length) {
-        return markedJoinedChatRooms.filter(chatRoom => chatRoom.joined);
-      }
-
-      return null;
-    }, [markedJoinedChatRooms]);
-
-    const availableChatRooms = useMemo(() => {
-      if (markedJoinedChatRooms?.length) {
-        return markedJoinedChatRooms.filter(chatRoom => !chatRoom.joined);
-      }
-
-      return null;
-    }, [markedJoinedChatRooms]);
+    const chatRoomsProxy = chatRooms.slice();
 
     useEffect(() => {
-      if (availableChatRooms?.length && !params.chatRoomId) {
+      if (chatRoomsProxy?.length && !params.chatRoomId) {
         navigation.setParams({
-          chatRoomId: availableChatRooms[0].id,
+          chatRoomId: chatRoomsProxy.slice()[0].id,
         })
       }
-    }, [params, availableChatRooms]);
-
-    const chatRoomsGroups: ChatRoomsGroupsModel[] | null = useMemo(() => {
-      const groups: ChatRoomsGroupsModel[] = [];
-
-      if (joinedChatRooms?.length) {
-        groups.push({
-          id: 'joined',
-          title: 'Your chat rooms',
-          data: joinedChatRooms,
-        })
-      }
-
-      if (availableChatRooms?.length) {
-        groups.push({
-          id: 'available',
-          title: 'Available chat rooms',
-          data: availableChatRooms,
-        })
-      }
-
-      return groups;
-    }, [joinedChatRooms, availableChatRooms])
-
-    const currentChatRoom = useMemo(() => {
-      if (markedJoinedChatRooms && markedJoinedChatRooms?.length && params.chatRoomId !== 'new') {
-        return markedJoinedChatRooms.find(chatRoom => chatRoom.id === Number(params.chatRoomId)) || null;
-      }
-
-      return null;
-    }, [params, chatRooms])
+    }, [params, chatRoomsProxy]);
 
     const toggleDrawer = () => {
       if (!open) {
@@ -180,12 +84,8 @@ export const ChatRoomScreen: FC<ChatTabScreenProps<"ChatRooms">> = observer(
       navigation.setParams({
         chatRoomId: chatRoomId,
       })
-    }
 
-    const joinChatRoom = async (chatRoomId: number) => {
-      await connectUserToChatRoom(chatRoomId);
-
-      navigateToChatRoom(chatRoomId);
+      setOpen(false);
     }
 
     const $drawerInsets = useSafeAreaInsetsStyle(["top"])
@@ -204,13 +104,14 @@ export const ChatRoomScreen: FC<ChatTabScreenProps<"ChatRooms">> = observer(
             </View>
 
             <ListView<ChatRoomGroupItem["item"]>
+              ListHeaderComponent={<Text preset={'subheading'} tx={'chatRoomScreen.drawerTitle'}></Text>}
               ref={menuRef}
               contentContainerStyle={$listContentContainer}
               estimatedItemSize={250}
-              data={chatRoomsGroups}
+              data={chatRoomsProxy}
               keyExtractor={(item) => item.title}
               renderItem={({ item }) => (
-                <ShowroomListItem {...{ item, joinChatRoom, navigateToChatRoom }} />
+                <ShowroomListItem {...{ item, navigateToChatRoom }} />
               )}
             />
 
@@ -218,6 +119,7 @@ export const ChatRoomScreen: FC<ChatTabScreenProps<"ChatRooms">> = observer(
               testID={`chat-room-create-button`}
               tx={ "chatRoomScreen.createChatRoomButton.title"}
               preset="reversed"
+              style={$sideBarButton}
               onPress={(e) => {
                 e.stopPropagation();
                 navigateToChatRoom('new');
@@ -229,12 +131,12 @@ export const ChatRoomScreen: FC<ChatTabScreenProps<"ChatRooms">> = observer(
         <Screen preset="fixed" safeAreaEdges={["top"]} contentContainerStyle={$screenContainer}>
           <View style={$headerContainer}>
             <DrawerIconButton onPress={toggleDrawer} />
-            <Text onPress={logout} tx={"common.logOut"} />
+            <LogoutButton />
           </View>
           { params.chatRoomId === 'new' ? (
-            <ChatRoomInfoEditorPage chatRoom={null} navigateToChatRoom={navigateToChatRoom} />
+            <ChatRoomInfoEditorPage chatRoomId={null} navigateToChatRoom={navigateToChatRoom} />
           ) : (
-            <ChatRoomPage chatRoom={currentChatRoom} />
+            <ChatRoomPage chatRoomId={Number(params.chatRoomId)} navigateToChatRoom={navigateToChatRoom} />
           )}
         </Screen>
       </Drawer>
@@ -244,11 +146,13 @@ export const ChatRoomScreen: FC<ChatTabScreenProps<"ChatRooms">> = observer(
 
 const $screenContainer: ViewStyle = {
   flex: 1,
+  paddingHorizontal: spacing.sm,
 }
 
 const $drawer: ViewStyle = {
   backgroundColor: colors.background,
   flex: 1,
+  gap: spacing.sm,
 }
 
 const $listContentContainer: ContentStyle = {
@@ -261,19 +165,27 @@ const $logoImage: ImageStyle = {
 }
 
 const $logoContainer: ViewStyle = {
-  alignSelf: "flex-start",
   justifyContent: "center",
   height: 56,
   width: '100%',
   paddingHorizontal: spacing.lg,
 }
 
-const $menuContainer: ViewStyle = {
-  paddingBottom: spacing.xs,
-  paddingTop: spacing.lg,
-}
-
 const $headerContainer: ViewStyle = {
   display: 'flex',
   justifyContent: 'space-between',
+  flexDirection: 'row',
+  alignItems: 'center',
+}
+
+const $sideBarButton: ViewStyle = {
+  borderRadius: 2,
+}
+
+const $webListItem: ViewStyle = {
+  minHeight: 56,
+  display: 'flex',
+  flexDirection: 'row',
+  justifyContent: 'flex-start',
+  alignItems: 'center',
 }

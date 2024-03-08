@@ -8,9 +8,11 @@ import { translate } from "../i18n"
 import { colors, spacing, typography } from "../theme"
 import { AppStackParamList, AppStackScreenProps } from "./AppNavigator"
 import { ChatRoomScreen } from "app/screens/ChatRoomsScreen/ChatRoomsScreen"
+import { NotificationsScreen } from "app/screens/NotificationsScreen/NotificationsScreen"
 
 export type ChatTabParamList = {
   ChatRooms: { chatRoomId?: number | 'new'; }
+  Notifications: { page?: 'list' | 'new' },
 }
 
 /**
@@ -55,6 +57,19 @@ export function ChatNavigator() {
           tabBarLabel: translate("chatNavigator.chatRoomsTab"),
           tabBarIcon: ({ focused }) => (
             <Icon icon="podcast" color={focused ? colors.tint : undefined} size={30} />
+          ),
+        }}
+      />
+
+      <Tab.Screen
+        name="Notifications"
+        component={NotificationsScreen}
+        initialParams={{ page: 'list' }}
+        options={{
+          tabBarAccessibilityLabel: translate("chatNavigator.notificationsTab"),
+          tabBarLabel: translate("chatNavigator.notificationsTab"),
+          tabBarIcon: ({ focused }) => (
+            <Icon icon="notifications" color={focused ? colors.tint : undefined} size={30} />
           ),
         }}
       />

@@ -109,6 +109,7 @@ export const iconRegistry = {
   view: require("../../assets/icons/view.png"),
   x: require("../../assets/icons/x.png"),
   chat: require("../../assets/icons/demo/chat.svg"),
+  notifications: require("../../assets/icons/demo/notifications.svg"),
 }
 
 const $imageStyleBase: ImageStyle = {

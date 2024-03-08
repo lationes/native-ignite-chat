@@ -4,8 +4,7 @@ import { AuthorizationData, TokenPairModel, UserTokensModel } from "app/types/au
 import AuthApi from '../services/api/authorization.api';
 import { AxiosError } from "axios/index"
 import { LoadingInfo, ResponseErrorData } from "app/types/common.types"
-import { User, UserModel } from "app/models/User"
-import { fi } from "date-fns/locale"
+import { User } from "app/models/User"
 
 const validator: Validator = {
   required: ['email', 'password']
@@ -47,9 +46,13 @@ export const AuthenticationStoreModel = types
       store.refreshToken = undefined;
       store.accessToken = undefined;
       store.authData = { email: '', password: ''};
+      store.authenticatedUserId = undefined;
     },
     setError(error: string | undefined) {
       store.error = error;
+    },
+    clearError() {
+      store.error = '';
     },
     setLoading(action: string, loading: boolean) {
       store.loading = { action, loading };
@@ -66,6 +69,10 @@ export const AuthenticationStoreModel = types
 
       if (existenceErrors && Object.values(existenceErrors).length) {
         return existenceErrors;
+      }
+
+      if (email.length < 3) {
+        return { email: 'Email cannot contain less than 3 characters' };
       }
 
       const { error, validate: validateEmail } = emailValidator({ email });
@@ -123,6 +130,7 @@ export const AuthenticationStoreModel = types
 
         if (logoutResponse) {
           store.clearAuthData();
+          store.clearError();
           callback && callback();
         }
       } finally {

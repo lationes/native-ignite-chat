@@ -3,6 +3,7 @@ import { AuthenticationStoreModel } from "./AuthenticationStore"
 import { ChatRoomStoreModel } from "./ChatRoomStore"
 import { MessageStoreModel } from "./MessageStore"
 import { UserStoreModel } from "./UserStore"
+import { AddRequestStoreModel } from "app/models/AddRequestStore"
 
 /**
  * A RootStore model.
@@ -12,6 +13,7 @@ export const RootStoreModel = types.model("RootStore").props({
   chatRoomStore: types.optional(ChatRoomStoreModel, {}),
   messageStore: types.optional(MessageStoreModel, {}),
   userStore: types.optional(UserStoreModel, {}),
+  addRequestStore: types.optional(AddRequestStoreModel, {}),
 })
 
 /**

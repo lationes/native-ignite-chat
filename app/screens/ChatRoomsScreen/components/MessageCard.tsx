@@ -7,34 +7,46 @@ import {
 } from "react-native"
 import { Button, Card, Text } from "app/components"
 import { colors, spacing } from "app/theme"
-import { Message } from "app/models/Message"
 import { useStores } from "app/models"
 import { translate } from "app/i18n"
+import { convertDateToAmericanFormat } from "app/helpers/common.helpers"
 
 interface IProps {
-  message: Message;
-  editMessage: (messageId: number) => void;
-  deleteMessage: (messageId: number) => void;
+  messageId: number;
+  editMessage: (messageId?: number) => void;
+  deleteMessage: (messageId?: number) => void;
 }
 
 export const MessageCard = observer(function MessageCard({
-                                                           message,
+                                                           messageId,
                                                            editMessage,
                                                            deleteMessage,
                                                   }: IProps) {
 
   const {
     userStore: { users },
-    authenticationStore: { authenticatedUserId }
+    authenticationStore: { authenticatedUserId },
+    messageStore: { messages },
   } = useStores();
 
-  const author = useMemo(() => {
-    if (users) {
-      return users.find(user => user.id === message.authorId)
+  const messagesProxy = messages.slice();
+  const usersProxy = users.slice();
+
+  const message = useMemo(() => {
+    if (messageId && messagesProxy?.length) {
+      return messagesProxy.slice().find(message => message.id === messageId);
     }
 
     return null;
-  }, [users])
+  }, [messageId, messagesProxy])
+
+  const author = useMemo(() => {
+    if (usersProxy?.length && message?.authorId) {
+      return usersProxy.slice().find(user => user.id === message.authorId);
+    }
+
+    return null;
+  }, [message, usersProxy]);
 
   const hasAccessToEdit = useMemo(() => {
     if (authenticatedUserId && message) {
@@ -45,11 +57,15 @@ export const MessageCard = observer(function MessageCard({
   }, [authenticatedUserId, message])
 
   const dateMetadata = useMemo(() => {
-    if (message.updatedAt) {
-      return translate('chatRoomScreen.messageCard.updatedAt', { date: message.updatedAt})
+    if (!message) {
+      return;
     }
 
-    return translate('chatRoomScreen.messageCard.createdAt', { date: message.createdAt})
+    if (message.updatedAt) {
+      return translate('common.updatedAt', { date: convertDateToAmericanFormat(message.updatedAt, 'withTime') })
+    }
+
+    return translate('common.createdAt', { date:  convertDateToAmericanFormat(message.createdAt, "withTime") })
   }, [message]);
 
   return (
@@ -75,22 +91,23 @@ export const MessageCard = observer(function MessageCard({
           </Text>
         </View>
       }
-      content={dateMetadata}
+      content={message?.content}
+      contentStyle={$content}
       FooterComponent={ hasAccessToEdit ? (
-        <View>
+        <View style={$footer}>
           <Button
             testID="message-editor-button"
-            tx={"chatRoomScreen.messageCard.editButtonTitle"}
+            tx={"common.edit"}
             style={$cardButton}
-            preset="filled"
-            onPress={() => editMessage(message.id)}
+            preset="default"
+            onPress={() => editMessage(message?.id)}
           />
           <Button
             testID="message-editor-button"
-            tx={"chatRoomScreen.messageCard.deleteButtonTitle"}
+            tx={"common.remove"}
             style={$cardButton}
-            preset="filled"
-            onPress={() => deleteMessage(message.id)}
+            preset="dangerous"
+            onPress={() => deleteMessage(message?.id)}
           />
         </View>
       ) : undefined}
@@ -112,6 +129,15 @@ const $metadata: TextStyle = {
   marginTop: spacing.xs,
   flexDirection: "row",
   justifyContent: 'space-between',
+}
+
+const $content: ViewStyle = {
+  marginVertical: spacing.md,
+}
+
+const $footer: ViewStyle = {
+  marginTop: spacing.md,
+  gap: spacing.xs,
 }
 
 const $metadataText: TextStyle = {

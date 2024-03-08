@@ -8,8 +8,8 @@ class ChatRoomApi extends Api {
     super();
   }
 
-  async getChatRooms(params: GetChatRoomsParams): Promise<ChatRoom[]> {
-    return Api.get({ route: '/chatroom', needAuth: true, params })
+  async getAvailableChatRooms(userId: number, params: GetChatRoomsParams): Promise<ChatRoom[]> {
+    return Api.get({ route: `/chatroom/user/${userId}`, needAuth: true, params })
   }
 
   async createChatRoom(data: CUChatRoomPayload): Promise<ChatRoom> {

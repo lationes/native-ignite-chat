@@ -1,5 +1,4 @@
 import { Instance, SnapshotIn, SnapshotOut, types } from "mobx-state-tree"
-import { withSetPropAction } from "./helpers/withSetPropAction"
 import { ChatRoomUserRelationModel } from "app/types/chatroom.types"
 
 /**
@@ -16,7 +15,6 @@ export const ChatRoomModel = types
     createdAt: types.string,
     updatedAt: types.maybeNull(types.string),
   })
-  .actions(withSetPropAction)
 
 export interface ChatRoom extends Instance<typeof ChatRoomModel> {}
 export interface ChatRoomSnapshotOut extends SnapshotOut<typeof ChatRoomModel> {}

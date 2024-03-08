@@ -1,36 +1,46 @@
 import { Instance, SnapshotOut, types } from "mobx-state-tree"
-import { withSetPropAction } from "./helpers/withSetPropAction"
 import { User, UserModel } from "app/models/User"
 import UserApi from "app/services/api/user.api"
 import { GetUsersParams } from "app/types/user.types"
 import { LoadingInfo } from "app/types/common.types"
-import { call } from "axios"
 
 export const UserStoreModel = types
-  .model("Messages")
+  .model("UserStore")
   .props({
     users: types.optional(types.array(UserModel), []),
+    userSuggestions: types.optional(types.array(UserModel), []),
     error: types.maybe(types.string),
-    loading:  types.optional(types.frozen<LoadingInfo>(), { action: '', loading: false }),
+    loading: types.optional(types.frozen<LoadingInfo>(), { action: '', loading: false }),
   })
-  .actions(withSetPropAction)
   .actions((store) => ({
     setError(error: string | undefined) {
       store.error = error;
     },
     setLoading(action: string, loading: boolean) {
       store.loading = { action, loading };
-    }
+    },
+    clearUserSuggestions() {
+      store.userSuggestions.clear();
+    },
+    setUsers(users: User[]) {
+      store.users.replace(users);
+    },
+    setUserSuggestions(userSuggestions: User[]) {
+      store.userSuggestions.replace(userSuggestions);
+    },
   }))
   .actions((store) => ({
-    async getUsers(data: GetUsersParams, callback?: (data?: User[]) => void) {
+    async getUsers(data: GetUsersParams, callback?: (data?: User[]) => void, storeTo?: 'userSuggestions' | 'users') {
       try {
-        store.setLoading('getMany', false);
-
+        store.setLoading('getMany', true);
         const response = await UserApi.getUsers(data);
 
         if (response) {
-          store.setProp("users", response)
+          if (storeTo === 'userSuggestions') {
+            store.setUserSuggestions(response);
+          } else {
+            store.setUsers(response);
+          }
           callback && callback(response);
         }
       } finally {
@@ -39,9 +49,8 @@ export const UserStoreModel = types
     },
     async getUserById(userId: number, callback?: (data?: User) => void) {
       try {
-        store.setLoading('getOne', false);
-
-        const users = [...(store.users || [] as User[])];
+        store.setLoading('getOne', true);
+        const users = store.users.slice(); // Using slice() for creating a shallow copy
         const response = await UserApi.getUserById(userId);
 
         if (response) {
@@ -53,7 +62,7 @@ export const UserStoreModel = types
             users.push(response);
           }
 
-          store.setProp("users", users)
+          store.setUsers(users);
           callback && callback(response);
         }
       } finally {
@@ -61,27 +70,25 @@ export const UserStoreModel = types
       }
     },
     async deleteUser(userId: number, callback?: (data?: User) => void) {
-      store.setLoading('delete', false);
-
       try {
-        const users = [...(store.users || [] as User[])];
+        store.setLoading('delete', true);
+        const users = store.users.slice(); // Using slice() for creating a shallow copy
         const deleteIndex = users.findIndex(user => user.id === userId);
-        const userToDelete = {...users[deleteIndex]};
+        const userToDelete = users[deleteIndex];
 
-        if (userToDelete.role !== 'ADMIN') {
-          throw 'User has no necessary permissions for this operation';
+        if (userToDelete && userToDelete.role !== 'ADMIN') {
+          throw new Error('User has no necessary permissions for this operation');
         }
 
         const response = await UserApi.deleteUser(userId);
 
         if (response) {
-          const deleteIndex = users.findIndex(user => user.id === userId);
           users.splice(deleteIndex, 1);
-          store.setProp("users", users);
+          store.setUsers(users);
           callback && callback(response);
         }
       } catch (e) {
-        store.setError(e as string);
+        store.setError(e.message);
       } finally {
         store.setLoading('', false);
       }

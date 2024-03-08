@@ -27,8 +27,12 @@ export function buildUrlParams(params: any) {
   return '?' + queryString;
 }
 
-export function convertDateToAmericanFormat(date: string | Date) {
-   return moment(date).format('MM-DD-YYYY');
+export function convertDateToAmericanFormat(date: string | Date, type: 'default' | 'withTime' = "default") {
+  if (type === 'withTime') {
+    return moment(date).format('MM-DD-YYYY HH:mm:ss');
+  }
+
+  return moment(date).format('MM-DD-YYYY');
 }
 
 export const slugify = (str: string) =>
@@ -38,4 +42,5 @@ export const slugify = (str: string) =>
     .replace(/[^\w\s-]/g, "")
     .replace(/[\s_-]+/g, "-")
     .replace(/^-+|-+$/g, "")
+
 

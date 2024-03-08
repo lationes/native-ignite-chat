@@ -1,35 +1,62 @@
 import { Instance, SnapshotOut, types } from "mobx-state-tree"
 import { ChatRoom, ChatRoomModel } from "./ChatRoom"
-import { withSetPropAction } from "./helpers/withSetPropAction"
 import {
   GetChatRoomsParams,
   CUChatRoomPayload,
 } from "app/types/chatroom.types"
 import ChatRoomApi from "app/services/api/chatRoom.api"
 import { LoadingInfo } from "app/types/common.types"
-import { fi, tr } from "date-fns/locale"
 
 export const ChatRoomStoreModel = types
   .model("ChatRoomStore")
   .props({
     chatRooms: types.optional(types.array(ChatRoomModel), []),
-    loading:  types.optional(types.frozen<LoadingInfo>(), { action: '', loading: false }),
+    chatRoomSuggestions: types.optional(types.array(ChatRoomModel), []),
+    loading: types.optional(types.frozen<LoadingInfo>(), { action: '', loading: false }),
   })
   .actions((store) => ({
     setLoading(action: string, loading: boolean) {
       store.loading = { action, loading };
-    }
+    },
+    clearChatRoomSuggestions() {
+      store.chatRoomSuggestions.clear();
+    },
+    addChatRoom(chatRoom: ChatRoom) {
+      store.chatRooms.push(chatRoom);
+    },
+    setChatRooms(chatRooms: ChatRoom[]) {
+      store.chatRooms.replace(chatRooms);
+    },
+    setChatRoomSuggestions(chatRooms: ChatRoom[]) {
+      store.chatRoomSuggestions.replace(chatRooms);
+    },
+    updateChatRoomById(chatRoomId: number, updatedChatRoom: ChatRoom) {
+      const index = store.chatRooms.findIndex(chatRoom => chatRoom.id === chatRoomId);
+      if (index !== -1) {
+        store.chatRooms.splice(index, 1, updatedChatRoom);
+      }
+    },
+    removeChatRoomById(chatRoomId: number) {
+      const deleteIndex = store.chatRooms.findIndex(chatRoom => chatRoom.id === chatRoomId);
+      if (deleteIndex !== -1) {
+        store.chatRooms.splice(deleteIndex, 1);
+      }
+    },
   }))
-  .actions(withSetPropAction)
   .actions((store) => ({
-    async fetchChatRooms(params: GetChatRoomsParams, callback?: (data?: ChatRoom[]) => void) {
+    async fetchAvailableChatRooms(userId: number, params: GetChatRoomsParams, callback?: (data?: ChatRoom[]) => void, storeTo?: 'chatRoomSuggestions' | 'chatRooms') {
       try {
         store.setLoading('get', true);
 
-        const response = await ChatRoomApi.getChatRooms(params);
+        const response = await ChatRoomApi.getAvailableChatRooms(userId, params);
 
         if (response) {
-          store.setProp("chatRooms", response);
+          if (storeTo === 'chatRoomSuggestions') {
+            store.setChatRoomSuggestions(response);
+          } else {
+            store.setChatRooms(response);
+          }
+
           callback && callback(response);
         }
       } finally {
@@ -40,13 +67,10 @@ export const ChatRoomStoreModel = types
       try {
         store.setLoading('create', false);
 
-        const chatRooms = [...(store.chatRooms || [] as ChatRoom[])];
-
         const response = await ChatRoomApi.createChatRoom(data);
 
         if (response) {
-          chatRooms.push(response);
-          store.setProp("chatRooms", chatRooms);
+          store.addChatRoom(response);
           callback && callback(response);
         }
       } finally {
@@ -57,14 +81,10 @@ export const ChatRoomStoreModel = types
       try {
         store.setLoading('update', false);
 
-        const chatRooms = [...(store.chatRooms || [] as ChatRoom[])];
-
         const response = await ChatRoomApi.updateChatRoom(chatRoomId, data);
 
         if (response) {
-          const updateIndex = chatRooms.findIndex(chatRoom => chatRoom.id === chatRoomId);
-          chatRooms.splice(updateIndex, 1, response);
-          store.setProp("chatRooms", chatRooms);
+          store.updateChatRoomById(chatRoomId, response);
           callback && callback(response);
         }
       } finally {
@@ -75,14 +95,10 @@ export const ChatRoomStoreModel = types
       try {
         store.setLoading('connect', false);
 
-        const chatRooms = [...(store.chatRooms || [] as ChatRoom[])];
-
         const response = await ChatRoomApi.connectUserToChatRoom(chatRoomId);
 
         if (response) {
-          const updateIndex = chatRooms.findIndex(chatRoom => chatRoom.id === chatRoomId);
-          chatRooms.splice(updateIndex, 1, response);
-          store.setProp("chatRooms", chatRooms);
+          store.updateChatRoomById(chatRoomId, response);
           callback && callback(response);
         }
       } finally {
@@ -93,14 +109,10 @@ export const ChatRoomStoreModel = types
       try {
         store.setLoading('delete', false);
 
-        const chatRooms = [...(store.chatRooms || [] as ChatRoom[])];
-
         const response = await ChatRoomApi.deleteChatRoom(chatRoomId);
 
         if (response) {
-          const deleteIndex = chatRooms.findIndex(chatRoom => chatRoom.id === chatRoomId);
-          chatRooms.splice(deleteIndex, 1);
-          store.setProp("chatRooms", chatRooms);
+          store.removeChatRoomById(chatRoomId);
           callback && callback(response);
         }
       } finally {

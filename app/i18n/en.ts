@@ -1,9 +1,14 @@
 const en = {
   common: {
     ok: "OK!",
+    accept: 'Accept!',
     cancel: "Cancel",
     back: "Back",
     logOut: "Log Out",
+    updatedAt: 'Updated at: {{date}}',
+    createdAt: 'Created at: {{date}}',
+    edit: 'Edit',
+    remove: 'Remove',
   },
   welcomeScreen: {
     postscript:
@@ -46,9 +51,11 @@ const en = {
   },
   chatNavigator: {
     chatRoomsTab: "Chat Rooms",
+    notificationsTab: "Notifications",
   },
   chatRoomScreen: {
     title: '{{title}}',
+    drawerTitle: 'Available chat rooms',
     noMessagesEmptyState: {
       heading: "This looks a bit empty",
       content:
@@ -79,16 +86,27 @@ const en = {
     },
     messageEditor: {
       inputPlaceholder: 'Insert your message here',
-      buttonTitle: 'Save',
-    },
-    messageCard: {
-      updatedAt: 'Updated at: {{date}}',
-      createdAt: 'Created at: {{date}}',
-      editButtonTitle: 'Edit',
-      deleteButtonTitle: 'Remove',
+      saveButtonTitle: 'Save',
     },
     deleteConfirmation: {
       title: "A you sure you want to delete this message?",
+    }
+  },
+  notificationsScreen: {
+    title: 'Notifications',
+    addRequestEditorTitle: 'Create add request',
+    notificationsEmptyState: {
+      heading: "No notifications for now :(",
+      content: "There are no new notifications for you. When there will be some we will notify you immediately!",
+    },
+    navigateTo: "Create add request",
+    userAutoComplete: {
+      label: 'User',
+      placeholder: 'Enter at least 3 characters of email...'
+    },
+    chatRoomAutoComplete: {
+      label: 'Chat room',
+      placeholder: 'Enter at least 3 characters of chat room name...'
     }
   },
   demoCommunityScreen: {

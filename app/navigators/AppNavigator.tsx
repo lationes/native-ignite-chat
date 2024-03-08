@@ -17,7 +17,7 @@ import { useColorScheme } from "react-native"
 import * as Screens from "app/screens"
 import Config from "../config"
 import { useStores } from "../models"
-import { ChatNavigator, DemoTabParamList } from "./ChatNavigator"
+import { ChatNavigator, ChatTabParamList } from "./ChatNavigator"
 import { navigationRef, useBackButtonHandler } from "./navigationUtilities"
 import { colors } from "app/theme"
 
@@ -37,7 +37,7 @@ import { colors } from "app/theme"
 export type AppStackParamList = {
   Welcome: undefined
   Login: undefined
-  Chat: NavigatorScreenParams<DemoTabParamList>
+  Chat: NavigatorScreenParams<ChatTabParamList>
   // 🔥 Your screens go here
   // IGNITE_GENERATOR_ANCHOR_APP_STACK_PARAM_LIST
 }
@@ -58,15 +58,22 @@ const Stack = createNativeStackNavigator<AppStackParamList>()
 
 const AppStack = observer(function AppStack() {
   const {
-    authenticationStore: { isAuthenticated },
-    chatRoomStore: { fetchChatRooms },
-    userStore: { getUsers }
+    authenticationStore: { isAuthenticated, authenticatedUserId },
+    chatRoomStore: { fetchAvailableChatRooms },
+    userStore: { getUsers },
+    addRequestStore: { getAddRequestsByUserId },
   } = useStores();
 
   useEffect(() => {
-    fetchChatRooms({ } )
     getUsers({ })
-  }, [])
+  }, [getUsers])
+
+  useEffect(() => {
+    if (authenticatedUserId) {
+      fetchAvailableChatRooms(authenticatedUserId, {});
+      getAddRequestsByUserId(authenticatedUserId);
+    }
+  }, [fetchAvailableChatRooms, getAddRequestsByUserId, authenticatedUserId])
 
   return (
     <Stack.Navigator

@@ -1,37 +1,44 @@
 import { observer } from "mobx-react-lite"
-import { Message } from "app/models/Message"
 import { View, ViewStyle } from "react-native"
 import { colors, spacing } from "app/theme"
 import { Button, Icon, TextField } from "app/components"
-import React, { useEffect, useState } from "react"
+import React, { useEffect, useMemo, useState } from "react"
 import { useStores } from "app/models"
 import { KeyValueModel } from "app/types/common.types"
 
 interface IProps {
-  message: Message | null;
+  messageId: number | null;
   open: boolean;
   setOpen: (open: boolean) => void;
   chatRoomId: number;
 }
 
 export const MessageEditor = observer(function MessageEditor({
-                                                           message,
+                                                           messageId,
                                                            open,
                                                            setOpen,
                                                            chatRoomId,
                                                          }: IProps) {
   const {
-    messageStore: { createMessage, updateMessage },
+    messageStore: { messages, createMessage, updateMessage },
   } = useStores();
 
-  const [textContent, setTextContent] = useState<string>(message?.content || '');
+  const [textContent, setTextContent] = useState<string>( '');
   const [errors, setErrors] = useState<KeyValueModel | null>(null);
 
+  const message = useMemo(() => {
+    if (messageId && messages?.length) {
+      return messages.slice().find(message => message.id === messageId);
+    }
+
+    return null;
+  }, [messageId, messages]);
+
   useEffect(() => {
-    if (message) {
+    if (message?.content) {
       setTextContent(message.content);
     }
-  }, [message]);
+  }, [message?.content]);
 
   const handleClose = () => {
     setOpen(false);
@@ -39,15 +46,8 @@ export const MessageEditor = observer(function MessageEditor({
     setErrors(null);
   }
 
-  const handleEditorButton = () => {
-    const isOpen = !open;
-
-    setOpen(isOpen);
-
-    if (!isOpen) {
-      setTextContent('');
-      setErrors(null);
-    }
+  const handleOpen = () => {
+    setOpen(true);
   }
 
   const handleSetTextContent = (text: string) => {
@@ -66,7 +66,7 @@ export const MessageEditor = observer(function MessageEditor({
     }
 
     if (!message) {
-      await createMessage({ content: textContent })
+      await createMessage({ content: textContent, chatRoomId })
     }
 
     handleClose();
@@ -74,16 +74,18 @@ export const MessageEditor = observer(function MessageEditor({
 
   return (
     <View style={$editorContainer}>
-      <Button onPress={handleEditorButton} style={$IconButton}>
-        <Icon icon={open ? 'x' : 'chat'} size={16} />
-      </Button>
+      { !open ? (
+        <Button onPress={handleOpen} style={$IconButton}>
+          <Icon icon={'chat'} size={16} />
+        </Button>
+      ) : null}
       { open ? (
-        <View>
+        <View style={$editorFieldsContainer}>
           <TextField
-            autoFocus={true}
+            autoFocus
             value={textContent}
+            multiline
             onChangeText={handleSetTextContent}
-            containerStyle={$textField}
             autoCapitalize="none"
             autoComplete="off"
             autoCorrect={false}
@@ -94,10 +96,17 @@ export const MessageEditor = observer(function MessageEditor({
           />
           <Button
             testID="message-editor-button"
-            tx={"chatRoomScreen.messageEditor.buttonTitle"}
+            tx={"chatRoomScreen.messageEditor.saveButtonTitle"}
             style={$tapButton}
             preset="reversed"
             onPress={handleMessage}
+          />
+          <Button
+            testID="message-editor-cancel-button"
+            tx={"common.cancel"}
+            style={$tapButton}
+            preset="outline"
+            onPress={handleClose}
           />
         </View>
       ) : null }
@@ -106,10 +115,10 @@ export const MessageEditor = observer(function MessageEditor({
 })
 
 const $IconButton: ViewStyle = {
-  width: 24,
-  height: 24,
+  width: 56,
+  height: 56,
   backgroundColor: colors.palette.primary500,
-  borderRadius: 50,
+  borderRadius: "50%",
   marginLeft: "auto",
 }
 
@@ -118,10 +127,19 @@ const $editorContainer: ViewStyle = {
   justifyContent: 'space-between',
   position: 'absolute',
   bottom: 0,
+  width: '100%',
+  paddingHorizontal: spacing.lg,
 }
 
-const $textField: ViewStyle = {
-  marginBottom: spacing.lg,
+const $editorFieldsContainer: ViewStyle = {
+  display: 'flex',
+  flexDirection: 'column',
+  gap: spacing.md,
+  backgroundColor: colors.palette.neutral200,
+  borderWidth: 1,
+  borderColor: colors.palette.neutral500,
+  borderRadius: spacing.md,
+  padding: spacing.md,
 }
 
 const $tapButton: ViewStyle = {

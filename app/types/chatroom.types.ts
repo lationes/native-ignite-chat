@@ -12,7 +12,3 @@ export interface ChatRoomUserRelationModel {
   chatRoomId: number;
   userId: number;
 }
-
-export interface JoinedChatRoom extends ChatRoom {
-  joined: boolean;
-}

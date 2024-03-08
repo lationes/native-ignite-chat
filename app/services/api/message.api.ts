@@ -1,6 +1,6 @@
 import Api from "./api";
 import { Message } from "app/models/Message"
-import { CUMessagePayload } from "app/types/message.types"
+import { CreateMessagePayload, UpdateMessagePayload } from "app/types/message.types"
 
 class MessageApi extends Api {
 
@@ -12,11 +12,11 @@ class MessageApi extends Api {
     return Api.get({ route: `/message/chatroom/${chatRoomId}`, needAuth: true })
   }
 
-  async createMessage(data: CUMessagePayload): Promise<Message> {
+  async createMessage(data: CreateMessagePayload): Promise<Message> {
     return Api.post({ route: '/message', needAuth: true, data })
   }
 
-  async updateMessage(messageId: number, data: CUMessagePayload): Promise<Message> {
+  async updateMessage(messageId: number, data: UpdateMessagePayload): Promise<Message> {
     return Api.patch({ route: `/message/${messageId}`, needAuth: true, data })
   }
 

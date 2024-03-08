@@ -18,76 +18,73 @@ import { useStores } from "app/models"
 import { spacing } from "app/theme"
 import { Message } from "app/models/Message"
 import { MessageCard } from "app/screens/ChatRoomsScreen/components/MessageCard"
-import { JoinedChatRoom } from "app/types/chatroom.types"
 import { MessageEditor } from "app/screens/ChatRoomsScreen/components/MessageEditor"
 import ConfirmationModal from "app/components/ConfirmationModal"
 
 interface IProps {
-  chatRoom: JoinedChatRoom | null;
+  chatRoomId: number | undefined;
+  navigateToChatRoom: (chatRoomId: number | 'new') => void,
 }
 
 
 export const ChatRoomPage: FC<IProps> = observer(
-  function ChatRoomPage({ chatRoom }) {
+  function ChatRoomPage({ chatRoomId, navigateToChatRoom }) {
     const {
-      chatRoomStore: { loading: chatRoomLoading, connectUserToChatRoom },
+      chatRoomStore: { chatRooms, loading: chatRoomLoading },
       messageStore: { messages, loading: messagesLoading, getMessagesByChatRoomId, deleteMessage }
     } = useStores();
+
+    const chatRoomsProxy = chatRooms.slice();
+    const messagesProxy = messages.slice();
 
     const [editedMessageId, setEditedMessageId] = useState<number | null>(null)
     const [messageToDeleteId, setMessageToDeleteId] = useState<number | null>(null)
     const [deleteConfirmationOpen, setDeleteConfirmationOpen] = useState<boolean>(false)
     const [messageEditorOpen, setMessageEditorOpen] = useState<boolean>(false);
 
-    const isLoading = useMemo(() => {
+    const isMessagesLoading = useMemo(() => {
       return messagesLoading.action === 'get' && messagesLoading.loading;
     }, [messagesLoading])
 
-    const editedMessage = useMemo(() => {
-      if (editedMessageId && messages) {
-        return messages.find(message => message.id === editedMessageId) || null;
+    const isChatRoomLoading = useMemo(() => {
+      return chatRoomLoading.action === 'get' && chatRoomLoading.loading;
+    }, [chatRoomLoading])
+
+    const chatRoom = useMemo(() => {
+      if (chatRoomId && chatRoomsProxy?.length) {
+        return chatRoomsProxy.slice().find(chatRoom => chatRoom.id === chatRoomId)
       }
 
-      return null;
-    }, [editedMessageId, messages]);
-
-    const messageToDelete = useMemo(() => {
-      if (messageToDeleteId && messages) {
-        return messages.find(message => message.id === messageToDeleteId) || null;
-      }
-
-      return null;
-    }, [messageToDeleteId, messages]);
+      return null
+    }, [chatRoomId, chatRoomsProxy])
 
     useEffect(() => {
-      if (chatRoom) {
-        getMessages(chatRoom.id)
+      if (chatRoomId) {
+        getMessages(chatRoomId)
       }
-    }, [chatRoom])
+    }, [chatRoomId])
 
     async function getMessages(chatRoomId: number) {
       await getMessagesByChatRoomId(chatRoomId);
     }
 
     async function manualRefresh() {
-      if (chatRoom) {
-        await getMessages(chatRoom.id)
+      if (chatRoomId) {
+        await getMessages(chatRoomId)
       }
     }
 
-    const joinChatRoom = async () => {
-      if (chatRoom) {
-        await connectUserToChatRoom(chatRoom.id);
+    const handleeEditMessage = (messageId?: number) => {
+      if (messageId) {
+        setEditedMessageId(messageId);
       }
     }
 
-    const handleeEditMessage = (messageId: number) => {
-      setEditedMessageId(messageId);
-    }
-
-    const handleDeleteMessage = (messageId: number) => {
-      setMessageToDeleteId(messageId);
-      setDeleteConfirmationOpen(true);
+    const handleDeleteMessage = (messageId?: number) => {
+      if (messageId) {
+        setMessageToDeleteId(messageId);
+        setDeleteConfirmationOpen(true);
+      }
     }
 
     const okDeleteCallback = async () => {
@@ -110,30 +107,30 @@ export const ChatRoomPage: FC<IProps> = observer(
         safeAreaEdges={["top"]}
         contentContainerStyle={$screenContentContainer}
       >
-        { chatRoomLoading?.action === 'get' && chatRoomLoading.loading ? (
+        { isChatRoomLoading ? (
           <ActivityIndicator />
         ) : null }
-        { !chatRoomLoading.loading && !chatRoom ? (
+        { !isChatRoomLoading && !chatRoom ? (
           <EmptyState
             preset="generic"
             style={$emptyState}
             headingTx={"chatRoomScreen.noChatRoomEmptyState.heading"}
             contentTx={"chatRoomScreen.noChatRoomEmptyState.content"}
-            button={''}
-            buttonOnPress={manualRefresh}
+            buttonTx={ "chatRoomScreen.createChatRoomButton.title"}
+            buttonOnPress={() => navigateToChatRoom('new')}
             imageStyle={$emptyStateImage}
             ImageProps={{ resizeMode: "contain" }}
           />
         ) : null }
-        { chatRoom && chatRoom?.joined ? (
+        { chatRoom ? (
           <ListView<Message>
             contentContainerStyle={$listContentContainer}
-            data={messages || []}
-            refreshing={isLoading}
+            data={messagesProxy || []}
+            refreshing={isMessagesLoading}
             estimatedItemSize={177}
             onRefresh={manualRefresh}
             ListEmptyComponent={
-              isLoading ? (
+              isMessagesLoading ? (
                 <ActivityIndicator />
               ) : (
                 <EmptyState
@@ -155,25 +152,14 @@ export const ChatRoomPage: FC<IProps> = observer(
             }
             renderItem={({ item }) => (
               <MessageCard
-                message={item}
+                messageId={item.id}
                 editMessage={handleeEditMessage}
                 deleteMessage={handleDeleteMessage}
               />
             )}
           />
-        ) : (
-          <EmptyState
-            preset="generic"
-            style={$emptyState}
-            headingTx={"chatRoomScreen.noChatRoomAccessEmptyState.heading"}
-            contentTx={"chatRoomScreen.noChatRoomAccessEmptyState.content"}
-            buttonTx={'chatRoomScreen.noChatRoomAccessEmptyState.button'}
-            buttonOnPress={joinChatRoom}
-            imageStyle={$emptyStateImage}
-            ImageProps={{ resizeMode: "contain" }}
-          />
-        )}
-        <MessageEditor open={messageEditorOpen} setOpen={manageMassageEditor} message={editedMessage} chatRoomId={chatRoom?.id || 0} />
+        ) : null}
+        <MessageEditor open={messageEditorOpen} setOpen={manageMassageEditor} messageId={editedMessageId} chatRoomId={chatRoom?.id || 0} />
         <ConfirmationModal open={deleteConfirmationOpen} setOpen={setDeleteConfirmationOpen} titleTx={"chatRoomScreen.deleteConfirmation.title"} okCallback={okDeleteCallback} />
       </Screen>
     )

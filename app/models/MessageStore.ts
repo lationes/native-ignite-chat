@@ -1,8 +1,7 @@
 import { Instance, SnapshotOut, types } from "mobx-state-tree"
-import { withSetPropAction } from "./helpers/withSetPropAction"
 import { Message, MessageModel } from "app/models/Message"
 import MessageApi from "app/services/api/message.api"
-import { CUMessagePayload } from "app/types/message.types"
+import { UpdateMessagePayload, CreateMessagePayload } from "app/types/message.types"
 import { LoadingInfo } from "app/types/common.types"
 
 export const MessageStoreModel = types
@@ -11,11 +10,28 @@ export const MessageStoreModel = types
     messages: types.optional(types.array(MessageModel), []),
     loading:  types.optional(types.frozen<LoadingInfo>(), { action: '', loading: false }),
   })
-  .actions(withSetPropAction)
   .actions((store) => ({
     setLoading(action: string, loading: boolean) {
       store.loading = { action, loading };
-    }
+    },
+    setMessages(messages: Message[]) {
+      store.messages.replace(messages);
+    },
+    addMessage(message: Message) {
+      store.messages.push(message);
+    },
+    updateMessageById(messageId: number, updatedMessage: Message) {
+      const index = store.messages.findIndex(message => message.id === messageId);
+      if (index !== -1) {
+        store.messages.splice(index, 1, updatedMessage);
+      }
+    },
+    deleteMessageById(messageId: number) {
+      const index = store.messages.findIndex(message => message.id === messageId);
+      if (index !== -1) {
+        store.messages.splice(index, 1);
+      }
+    },
   }))
   .actions((store) => ({
     async getMessagesByChatRoomId(chatRoomId: number, callback?: (data?: Message[]) => void) {
@@ -25,42 +41,35 @@ export const MessageStoreModel = types
         const response = await MessageApi.getMessagesByChatRoomId(chatRoomId);
 
         if (response) {
-          store.setProp("messages", response)
+          store.setMessages(response);
           callback && callback(response);
         }
       } finally {
         store.setLoading('', false);
       }
     },
-    async createMessage(data: CUMessagePayload, callback?: (data?: Message) => void) {
+    async createMessage(data: CreateMessagePayload, callback?: (data?: Message) => void) {
       try {
         store.setLoading('create', true);
-
-        const messages = [...(store.messages || [] as Message[])];
 
         const response = await MessageApi.createMessage(data);
 
         if (response) {
-          messages.push(response);
-          store.setProp("messages", messages);
+          store.addMessage(response);
           callback && callback(response);
         }
       } finally {
         store.setLoading('', false);
       }
     },
-    async updateMessage(messageId: number, data: CUMessagePayload, callback?: (data?: Message) => void) {
+    async updateMessage(messageId: number, data: UpdateMessagePayload, callback?: (data?: Message) => void) {
       try {
         store.setLoading('update', true);
-
-        const messages = [...(store.messages || [] as Message[])];
 
         const response = await MessageApi.updateMessage(messageId, data);
 
         if (response) {
-          const updateIndex = messages.findIndex(message => message.id === messageId);
-          messages.splice(updateIndex, 1, response);
-          store.setProp("messages", messages);
+          store.updateMessageById(messageId, response);
           callback && callback(response);
         }
       } finally {
@@ -71,14 +80,10 @@ export const MessageStoreModel = types
       try {
         store.setLoading('delete', true);
 
-        const messages = [...(store.messages || [] as Message[])];
-
         const response = await MessageApi.deleteMessage(messageId);
 
         if (response) {
-          const deleteIndex = messages.findIndex(message => message.id === messageId);
-          messages.splice(deleteIndex, 1);
-          store.setProp("messages", messages);
+          store.deleteMessageById(messageId);
           callback && callback(response);
         }
       } finally {
