@@ -78,34 +78,6 @@ export const CreateAddRequestPage: FC<IProps> = observer(
       setFunction(Number(item.id));
     }
 
-    const handleLoadSuggestions = async (text: string, field: 'user' | 'chatRoom') => {
-      setErrors(null);
-
-      if (!authenticatedUserId) {
-        return;
-      }
-
-      if (typeof text !== 'string' || text.length < 3) {
-        onClear(field);
-        return;
-      }
-
-      const filterToken = text.toLowerCase().trim();
-
-      if (field === 'user') {
-        await getUsers({ search: filterToken }, undefined, 'userSuggestions' );
-      }
-
-      if (field === 'chatRoom') {
-        await fetchAvailableChatRooms(authenticatedUserId,{ search: filterToken }, undefined, 'chatRoomSuggestions');
-      }
-    }
-
-    const onClear = (field: 'user' | 'chatRoom') => {
-      const clearList = field === 'user' ? clearUserSuggestions : clearChatRoomSuggestions;
-      clearList();
-    }
-
     const handleSaveAddRequest = async () => {
       let errors = {};
 
@@ -143,7 +115,6 @@ export const CreateAddRequestPage: FC<IProps> = observer(
               placeholderTx={'notificationsScreen.userAutoComplete.placeholder'}
               dataSet={userDropdownItems}
               selectItem={(item) => handleSelectItem(item, 'user')}
-              onClear={() => onClear('user')}
               loading={loadingUsers.action === 'get' && loadingUsers.loading}
               status={errors?.selectedUserId ? 'error' : undefined}
               helper={errors?.selectedUserId ? errors?.selectedUserId : undefined}
@@ -153,7 +124,6 @@ export const CreateAddRequestPage: FC<IProps> = observer(
               placeholderTx={'notificationsScreen.chatRoomAutoComplete.placeholder'}
               dataSet={chatRoomDropdownItems}
               selectItem={(item) => handleSelectItem(item, 'chatRoom')}
-              onClear={() => onClear('chatRoom')}
               loading={loadingChatRooms.action === 'getMany' && loadingChatRooms.loading}
               status={errors?.selectedChatRoomId ? 'error' : undefined}
               helper={errors?.selectedChatRoomId ? errors?.selectedUserId : undefined}

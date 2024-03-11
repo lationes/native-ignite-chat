@@ -17,7 +17,6 @@ interface IProps {
   placeholderTxOptions?: TextProps["txOptions"];
   dataSet: CommonItemModel[] | null;
   selectItem: (item: CommonItemModel) => void;
-  onClear?: () => void;
   onOpenSuggestionsList?: (isOpened: boolean) => void;
   loading?: boolean;
   /**
@@ -57,7 +56,6 @@ export const AutoComplete: FC<IProps> = observer(({
                                                     status,
                                                     dataSet,
                                                     selectItem,
-                                                    onClear,
                                                     onOpenSuggestionsList,
                                                     loading,
                                                     ...props
