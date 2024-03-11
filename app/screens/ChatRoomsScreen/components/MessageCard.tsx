@@ -98,14 +98,12 @@ export const MessageCard = observer(function MessageCard({
           <Button
             testID="message-editor-button"
             tx={"common.edit"}
-            style={$cardButton}
             preset="default"
             onPress={() => editMessage(message?.id)}
           />
           <Button
             testID="message-editor-button"
             tx={"common.remove"}
-            style={$cardButton}
             preset="dangerous"
             onPress={() => deleteMessage(message?.id)}
           />
@@ -121,13 +119,12 @@ export const MessageCard = observer(function MessageCard({
 const $item: ViewStyle = {
   padding: spacing.md,
   marginTop: spacing.md,
-  minHeight: 120,
 }
 
 const $metadata: TextStyle = {
   color: colors.textDim,
   marginTop: spacing.xs,
-  flexDirection: "row",
+  flexDirection: "column",
   justifyContent: 'space-between',
 }
 
@@ -144,9 +141,5 @@ const $metadataText: TextStyle = {
   color: colors.textDim,
   marginEnd: spacing.md,
   marginBottom: spacing.xs,
-}
-
-const $cardButton: ViewStyle = {
-  height: 32,
 }
 // #endregion

@@ -2,6 +2,7 @@ import React from "react"
 import { Text } from "app/components/Text"
 import { View, ViewStyle } from "react-native"
 import { useStores } from "app/models"
+import { colors } from "app/theme"
 
 const LogoutButton = () => {
   const {
@@ -10,7 +11,7 @@ const LogoutButton = () => {
 
   return (
     <View style={$container}>
-      <Text onPress={() => logout()} tx={"common.logOut"} />
+      <Text style={{ color: colors.palette.primary500 }} onPress={() => logout()} tx={"common.logOut"} />
     </View>
   )
 }
@@ -20,7 +21,6 @@ const $container: ViewStyle = {
   justifyContent: 'center',
   alignItems: 'center',
   height: 56,
-  width: 64,
 }
 
 export default LogoutButton

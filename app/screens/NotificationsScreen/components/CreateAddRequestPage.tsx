@@ -1,5 +1,5 @@
 import { observer } from "mobx-react-lite"
-import React, { FC, useMemo, useState } from "react"
+import React, { FC, useEffect, useMemo, useState } from "react"
 import {
   View,
   ViewStyle,
@@ -11,8 +11,7 @@ import {
 import { useStores } from "app/models"
 import { spacing } from "app/theme"
 import { AutoComplete } from "app/components/AutoComplete"
-import { TAutocompleteDropdownItem } from "react-native-autocomplete-dropdown"
-import { KeyValueModel } from "app/types/common.types"
+import { CommonItemModel, KeyValueModel } from "app/types/common.types"
 
 interface IProps {
   goBack: () => void,
@@ -28,37 +27,48 @@ export const CreateAddRequestPage: FC<IProps> = observer(
       chatRoomStore: { loading: loadingChatRooms, fetchAvailableChatRooms, clearChatRoomSuggestions, chatRoomSuggestions },
     } = useStores();
 
-    const [selectedUserId, setSelectedUserId] = useState<number>();
-    const [selectedChatRoomId, setSelectedChatRoomId] = useState<number>();
+    const userSuggestionsProxy = userSuggestions.slice();
+    const chatRoomSuggestionsProxy = chatRoomSuggestions.slice();
+
+    const [selectedUserId, setSelectedUserId] = useState<number | null>();
+    const [selectedChatRoomId, setSelectedChatRoomId] = useState<number | null>();
+
     const [errors, setErrors] = useState<KeyValueModel | null>(null);
 
     const userDropdownItems = useMemo(() => {
-      if (userSuggestions) {
-        return userSuggestions.map(user => {
+      if (userSuggestionsProxy) {
+        return userSuggestionsProxy.map(user => {
           return {
-            id: String(user.id),
+            id: user.id,
             title: user.email,
           }
         })
       }
 
       return null;
-    }, [userSuggestions]);
+    }, [userSuggestionsProxy]);
 
     const chatRoomDropdownItems = useMemo(() => {
-      if (chatRoomSuggestions) {
-        return chatRoomSuggestions.map(chatRoom => {
+      if (chatRoomSuggestionsProxy) {
+        return chatRoomSuggestionsProxy.map(chatRoom => {
           return {
-            id: String(chatRoom.id),
+            id: chatRoom.id,
             title: chatRoom.title,
           }
         })
       }
 
       return null;
-    }, [chatRoomSuggestions]);
+    }, [chatRoomSuggestionsProxy]);
 
-    const handleSelectItems = (item: TAutocompleteDropdownItem, field: 'user' | 'chatRoom') => {
+    useEffect(() => {
+      if (authenticatedUserId) {
+        getUsers({}, undefined, 'userSuggestions' );
+        fetchAvailableChatRooms(authenticatedUserId,{}, undefined, 'chatRoomSuggestions');
+      }
+    }, [authenticatedUserId]);
+
+    const handleSelectItem = (item: CommonItemModel, field: 'user' | 'chatRoom') => {
       if (!item) {
         return;
       }
@@ -132,8 +142,7 @@ export const CreateAddRequestPage: FC<IProps> = observer(
               labelTx={'notificationsScreen.userAutoComplete.label'}
               placeholderTx={'notificationsScreen.userAutoComplete.placeholder'}
               dataSet={userDropdownItems}
-              selectItem={(item) => handleSelectItems(item, 'user')}
-              onChangeText={(text) => handleLoadSuggestions(text, 'user')}
+              selectItem={(item) => handleSelectItem(item, 'user')}
               onClear={() => onClear('user')}
               loading={loadingUsers.action === 'get' && loadingUsers.loading}
               status={errors?.selectedUserId ? 'error' : undefined}
@@ -143,8 +152,7 @@ export const CreateAddRequestPage: FC<IProps> = observer(
               labelTx={'notificationsScreen.chatRoomAutoComplete.label'}
               placeholderTx={'notificationsScreen.chatRoomAutoComplete.placeholder'}
               dataSet={chatRoomDropdownItems}
-              selectItem={(item) => handleSelectItems(item, 'chatRoom')}
-              onChangeText={(text) => handleLoadSuggestions(text, 'chatRoom')}
+              selectItem={(item) => handleSelectItem(item, 'chatRoom')}
               onClear={() => onClear('chatRoom')}
               loading={loadingChatRooms.action === 'getMany' && loadingChatRooms.loading}
               status={errors?.selectedChatRoomId ? 'error' : undefined}
@@ -184,7 +192,6 @@ const $heading: ViewStyle = {
 const $pageContent: ViewStyle = {
   display: 'flex',
   width: '100%',
-  height: 'calc(100% - 56px)',
   alignItems: 'center',
   justifyContent: 'space-between',
   gap: spacing.md,

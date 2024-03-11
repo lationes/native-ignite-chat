@@ -102,11 +102,10 @@ export const ChatRoomPage: FC<IProps> = observer(
     }
 
     return (
-      <Screen
-        preset="fixed"
-        safeAreaEdges={["top"]}
-        contentContainerStyle={$screenContentContainer}
-      >
+      <>
+        <View style={$heading}>
+          <Text preset="heading" tx="chatRoomScreen.title" txOptions={{ title: chatRoom?.title || ''}} />
+        </View>
         { isChatRoomLoading ? (
           <ActivityIndicator />
         ) : null }
@@ -127,7 +126,6 @@ export const ChatRoomPage: FC<IProps> = observer(
             contentContainerStyle={$listContentContainer}
             data={messagesProxy || []}
             refreshing={isMessagesLoading}
-            estimatedItemSize={177}
             onRefresh={manualRefresh}
             ListEmptyComponent={
               isMessagesLoading ? (
@@ -145,11 +143,6 @@ export const ChatRoomPage: FC<IProps> = observer(
                 />
               )
             }
-            ListHeaderComponent={
-              <View style={$heading}>
-                <Text preset="heading" tx="chatRoomScreen.title" txOptions={{ title: chatRoom?.title || ''}} />
-              </View>
-            }
             renderItem={({ item }) => (
               <MessageCard
                 messageId={item.id}
@@ -161,24 +154,20 @@ export const ChatRoomPage: FC<IProps> = observer(
         ) : null}
         <MessageEditor open={messageEditorOpen} setOpen={manageMassageEditor} messageId={editedMessageId} chatRoomId={chatRoom?.id || 0} />
         <ConfirmationModal open={deleteConfirmationOpen} setOpen={setDeleteConfirmationOpen} titleTx={"chatRoomScreen.deleteConfirmation.title"} okCallback={okDeleteCallback} />
-      </Screen>
+      </>
     )
   },
 )
 
 // #region Styles
-const $screenContentContainer: ViewStyle = {
-  flex: 1,
-}
 
 const $listContentContainer: ContentStyle = {
-  paddingHorizontal: spacing.lg,
-  paddingTop: spacing.lg + spacing.xl,
-  paddingBottom: spacing.lg,
+  paddingHorizontal: spacing.md,
 }
 
 const $heading: ViewStyle = {
   marginBottom: spacing.md,
+  paddingHorizontal: spacing.md
 }
 
 const $emptyState: ViewStyle = {

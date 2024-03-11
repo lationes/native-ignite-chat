@@ -8,7 +8,7 @@ class UserApi extends Api {
     super();
   }
 
-  async getUsers(params: GetUsersParams): Promise<User[]> {
+  async getUsers(params?: GetUsersParams): Promise<User[]> {
     return Api.get({ route: '/user', needAuth: true, params })
   }
 

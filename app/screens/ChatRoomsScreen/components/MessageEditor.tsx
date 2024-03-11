@@ -118,7 +118,7 @@ const $IconButton: ViewStyle = {
   width: 56,
   height: 56,
   backgroundColor: colors.palette.primary500,
-  borderRadius: "50%",
+  borderRadius: 28,
   marginLeft: "auto",
 }
 
@@ -128,7 +128,7 @@ const $editorContainer: ViewStyle = {
   position: 'absolute',
   bottom: 0,
   width: '100%',
-  paddingHorizontal: spacing.lg,
+  paddingHorizontal: spacing.md,
 }
 
 const $editorFieldsContainer: ViewStyle = {

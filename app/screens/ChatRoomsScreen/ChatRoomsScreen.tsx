@@ -128,7 +128,7 @@ export const ChatRoomScreen: FC<ChatTabScreenProps<"ChatRooms">> = observer(
           </View>
         )}
       >
-        <Screen preset="fixed" safeAreaEdges={["top"]} contentContainerStyle={$screenContainer}>
+        <Screen safeAreaEdges={["top"]} preset="fixed" contentContainerStyle={$screenContainer}>
           <View style={$headerContainer}>
             <DrawerIconButton onPress={toggleDrawer} />
             <LogoutButton />

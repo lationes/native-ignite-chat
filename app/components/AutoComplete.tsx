@@ -1,25 +1,22 @@
-import React, { FC, useMemo, useRef } from "react"
-import { Dimensions, View, Platform, TextStyle } from "react-native"
-import {
-  AutocompleteDropdown,
-  AutocompleteDropdownProps,
-  TAutocompleteDropdownItem,
-} from "react-native-autocomplete-dropdown"
+import React, { FC, useMemo } from "react"
+import { View, TextStyle, StyleProp, ViewStyle, Dimensions } from "react-native"
+import SelectDropdown from "react-native-select-dropdown";
+import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import { observer } from "mobx-react-lite"
 import { Text, TextProps } from "app/components"
 import { colors, spacing } from "app/theme"
 import { translate } from "app/i18n"
+import { CommonItemModel } from "app/types/common.types"
 
-interface IProps extends AutocompleteDropdownProps {
+interface IProps {
   label?: string;
   labelTx?: TextProps["tx"];
   labelTxOptions?: TextProps["txOptions"];
   placeholder?: string;
   placeholderTx?: TextProps["tx"];
   placeholderTxOptions?: TextProps["txOptions"];
-  dataSet: TAutocompleteDropdownItem[] | null;
-  selectItem: (item: TAutocompleteDropdownItem) => void;
-  onChangeText: (text: string) => void;
+  dataSet: CommonItemModel[] | null;
+  selectItem: (item: CommonItemModel) => void;
   onClear?: () => void;
   onOpenSuggestionsList?: (isOpened: boolean) => void;
   loading?: boolean;
@@ -60,14 +57,11 @@ export const AutoComplete: FC<IProps> = observer(({
                                                     status,
                                                     dataSet,
                                                     selectItem,
-                                                    onChangeText,
                                                     onClear,
                                                     onOpenSuggestionsList,
                                                     loading,
                                                     ...props
                                                   }) => {
-  const dropdownController = useRef(null);
-  const searchRef = useRef(null);
 
   const labelContent = useMemo(() => {
     if (label) {
@@ -101,93 +95,107 @@ export const AutoComplete: FC<IProps> = observer(({
 
   return (
     <>
-      <View style={[
-        { flex: 1, flexDirection: 'column', justifyContent: 'center', gap: spacing.sm },
-        Platform.select({ ios: { zIndex: 1 } }),
-      ]}>
+      <View style={$container}>
         <Text preset={'subheading'}>{labelContent}</Text>
-        <View
-          style={[
-            { flex: 1, flexDirection: 'row', alignItems: 'center' },
-            Platform.select({ ios: { zIndex: 1 } }),
-          ]}>
-          <AutocompleteDropdown
-            ref={searchRef}
-            controller={controller => {
-              dropdownController.current = controller
-            }}
-            // initialValue={'1'}
-            direction={Platform.select({ ios: 'down' })}
-            dataSet={dataSet}
-            onChangeText={onChangeText}
-            onSelectItem={selectItem}
-            debounce={600}
-            suggestionsListMaxHeight={Dimensions.get('window').height * 0.4}
-            onClear={onClear}
-            //  onSubmit={(e) => onSubmitSearch(e.nativeEvent.text)}
-            onOpenSuggestionsList={onOpenSuggestionsList}
-            loading={loading}
-            useFilter={false} // set false to prevent rerender twice
-            containerStyle={{
-              flexGrow: 1,
-              flexShrink: 1,
-              borderRadius: spacing.xxs,
-              backgroundColor: colors.palette.neutral100,
-              borderWidth: 1,
-              borderColor: status === "error" ? colors.error : colors.palette.neutral400,
-            }}
-            textInputProps={{
-              placeholder: placeholderContent,
-              placeholderTextColor: colors.textDim,
-              autoCorrect: false,
-              autoCapitalize: 'none',
-              style: {
-                outline: 'none',
-                borderRadius: 0,
-                borderWidth: 0,
-                backgroundColor: 'none',
-                color: colors.text,
-                paddingLeft: spacing.md,
-                width: '100%',
-                paddingRight: 0,
-              },
-            }}
-            rightButtonsContainerStyle={{
-              flex: '1 1 max-content',
-              right: spacing.sm,
-              height: 30,
-              alignSelf: 'center',
-              backgroundColor: colors.palette.neutral100,
-            }}
-            inputContainerStyle={{
-              backgroundColor: 'inherit',
-            }}
-            suggestionsListContainerStyle={{
-              backgroundColor: '#383b42',
-            }}
-            renderItem={(item, text) => <Text size={'md'} style={{ color: '#fff', padding: spacing.md }}>{item.title}</Text>}
-            inputHeight={spacing.xxl}
-            showChevron={false}
-            closeOnBlur={false}
-            showClear
-            clearOnFocus={false}
-            {...(props || {})}
+        <SelectDropdown
+          data={dataSet || []}
+          onSelect={(item) => {
+            selectItem(item);
+          }}
+          defaultButtonText={placeholderContent}
+          buttonTextAfterSelection={(selectedItem, index) => {
+            return selectedItem.title;
+          }}
+          rowTextForSelection={(item, index) => {
+            return item.title;
+          }}
+          buttonStyle={$dropdownBtnStyle}
+          buttonTextStyle={dropdownBtnTxtStyle}
+          renderDropdownIcon={isOpened => {
+            return <FontAwesome name={isOpened ? 'chevron-up' : 'chevron-down'} color={'#444'} size={18} />;
+          }}
+          dropdownIconPosition={'right'}
+          dropdownStyle={dropdownDropdownStyle}
+          rowStyle={dropdownRowStyle}
+          rowTextStyle={dropdownRowTxtStyle}
+          selectedRowStyle={dropdownSelectedRowStyle}
+          search
+          searchInputStyle={dropdownSearchInputStyleStyle}
+          searchPlaceHolder={translate('common.search')}
+          searchPlaceHolderColor={colors.textDim}
+          renderSearchInputLeftIcon={() => {
+            return <FontAwesome name={'search'} color={'#444'} size={18} />;
+          }}
+        />
+        {!!(helper || helperTx) && (
+          <Text
+            preset="formHelper"
+            text={helper}
+            tx={helperTx}
+            txOptions={helperTxOptions}
+            {...HelperTextProps}
+            style={$helperStyles}
           />
-          {!!(helper || helperTx) && (
-            <Text
-              preset="formHelper"
-              text={helper}
-              tx={helperTx}
-              txOptions={helperTxOptions}
-              {...HelperTextProps}
-              style={$helperStyles}
-            />
-          )}
-        </View>
+        )}
       </View>
     </>
   )
 })
+
+const $container: StyleProp<ViewStyle> = [
+  {
+    flexDirection: 'column',
+    justifyContent: 'center',
+    gap: spacing.sm,
+  },
+]
+
+const $dropdownBtnStyle: ViewStyle = {
+  width: '100%',
+  height: 50,
+  backgroundColor: colors.background,
+  borderRadius: 8,
+  borderWidth: 1,
+  borderColor: colors.border,
+}
+
+const dropdownBtnTxtStyle: TextStyle = {
+  color: colors.text,
+  textAlign: 'left',
+};
+
+const dropdownDropdownStyle: ViewStyle =  {
+  backgroundColor: colors.background,
+  height: Dimensions.get('window').height * 0.4,
+  gap: spacing.xs,
+  borderRadius: spacing.xs,
+};
+
+const dropdownRowStyle: ViewStyle = {
+  margin: 0,
+  padding: spacing.md,
+  backgroundColor: 'inherit',
+  borderBottomColor: colors.border,
+};
+
+const dropdownRowTxtStyle: TextStyle =  {
+  color: colors.text,
+  textAlign: 'left',
+  marginHorizontal: 0,
+};
+
+const dropdownSelectedRowStyle: ViewStyle =  {
+  backgroundColor: 'rgba(0,0,0,0.1)',
+};
+
+const dropdownSearchInputStyleStyle: ViewStyle = {
+  backgroundColor: 'inherit',
+  borderRadius: 0,
+  borderBottomWidth: 1,
+  borderBottomColor: colors.border,
+  outline: 'none',
+  paddingHorizontal: spacing.md,
+}
 
 const $helperStyle: TextStyle = {
   marginTop: spacing.xs,

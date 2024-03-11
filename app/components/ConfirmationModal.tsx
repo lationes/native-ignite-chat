@@ -42,14 +42,14 @@ export function ConfirmationModal ({
           <View style={styles.buttonContainer}>
             <Button
               testID="message-editor-button"
-              tx={"chatRoomScreen.messageCard.editButtonTitle"}
+              tx={"common.edit"}
               preset="default"
               style={styles.button}
               onPress={okCallback}
             />
             <Button
               testID="message-editor-button"
-              tx={"chatRoomScreen.messageCard.editButtonTitle"}
+              tx={"common.cancel"}
               preset="default"
               style={styles.button}
               onPress={closeModal}

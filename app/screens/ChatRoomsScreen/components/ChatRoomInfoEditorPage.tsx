@@ -75,11 +75,7 @@ export const ChatRoomInfoEditorPage: FC<IProps> = observer(
     }
 
     return (
-      <Screen
-        preset="fixed"
-        safeAreaEdges={["top"]}
-        contentContainerStyle={$screenContentContainer}
-      >
+      <>
         <View style={$heading}>
           <Text preset="heading" tx="chatRoomScreen.chatRoomEditorPage.title" />
         </View>
@@ -108,16 +104,12 @@ export const ChatRoomInfoEditorPage: FC<IProps> = observer(
             onPress={handleSaveChatRoomInfo}
           />
         </View>
-      </Screen>
+      </>
     )
   },
 )
 
 // #region Styles
-const $screenContentContainer: ViewStyle = {
-  flex: 1,
-}
-
 const $heading: ViewStyle = {
   alignSelf: 'center',
   marginBottom: spacing.md,
@@ -126,7 +118,6 @@ const $heading: ViewStyle = {
 const $pageContent: ViewStyle = {
   display: 'flex',
   width: '100%',
-  height: 'calc(100% - 56px)',
   alignItems: 'center',
   justifyContent: 'space-between',
   gap: spacing.md,

@@ -1,5 +1,5 @@
 import React, { FC, useEffect, useMemo } from "react"
-import { ActivityIndicator, ImageStyle, View, ViewStyle } from "react-native"
+import { ActivityIndicator, ImageStyle, Platform, StyleProp, View, ViewStyle } from "react-native"
 import { type ContentStyle } from "@shopify/flash-list"
 import { Button, EmptyState, ListView, Screen, Text } from "app/components"
 import { ChatTabParamList, ChatTabScreenProps } from "app/navigators/ChatNavigator"
@@ -56,11 +56,13 @@ export const NotificationsScreen: FC<ChatTabScreenProps<"Notifications">> = obse
       navigation.navigate('ChatRooms', { chatRoomId })
     }
 
-    const handleDeleteAddRequest = async (chatRoomId: number) => {
-      await deleteAddRequest(chatRoomId, getAddRequests);
+    const handleDeleteAddRequest = async (chatRoomId?: number) => {
+      if (chatRoomId) {
+        await deleteAddRequest(chatRoomId, getAddRequests);
+      }
     }
 
-    const handleAcceptAddRequest = async (addRequestId: number) => {
+    const handleAcceptAddRequest = async (addRequestId?: number) => {
       const addRequest = addRequests.slice().find(addRequest => addRequest.id === addRequestId);
 
       if (addRequest) {
@@ -72,7 +74,7 @@ export const NotificationsScreen: FC<ChatTabScreenProps<"Notifications">> = obse
     }
 
     return (
-      <Screen preset="fixed" safeAreaEdges={["top"]} contentContainerStyle={$screenContainer}>
+      <Screen safeAreaEdges={["top", "bottom"]} preset="fixed" contentContainerStyle={$screenContainer}>
         <View style={$headerContainer}>
           <LogoutButton />
         </View>
@@ -105,6 +107,15 @@ export const NotificationsScreen: FC<ChatTabScreenProps<"Notifications">> = obse
                   <Text preset="heading" tx="notificationsScreen.title"/>
                 </View>
               }
+              ListFooterComponentStyle={$listFooterStyles}
+              ListFooterComponent={
+                <Button
+                  testID="message-editor-button"
+                  tx={"notificationsScreen.navigateTo"}
+                  preset="reversed"
+                  onPress={navigateToCreateAddRequest}
+                />
+              }
               renderItem={({ item }) => (
                 <NotificationCard
                   addRequestId={item.id}
@@ -112,12 +123,6 @@ export const NotificationsScreen: FC<ChatTabScreenProps<"Notifications">> = obse
                   deleteAddRequest={handleDeleteAddRequest}
                 />
               )}
-            />
-            <Button
-              testID="message-editor-button"
-              tx={"notificationsScreen.navigateTo"}
-              preset="reversed"
-              onPress={navigateToCreateAddRequest}
             />
           </View>
         ) : null}
@@ -134,6 +139,7 @@ const $headerContainer: ViewStyle = {
   justifyContent: 'flex-end',
   flexDirection: 'row',
   alignItems: 'center',
+  paddingHorizontal: spacing.md,
 }
 
 const $screenContainer: ViewStyle = {
@@ -142,9 +148,11 @@ const $screenContainer: ViewStyle = {
 }
 
 const $listContentContainer: ContentStyle = {
-  paddingHorizontal: spacing.lg,
-  paddingTop: spacing.lg + spacing.xl,
-  paddingBottom: spacing.lg,
+  paddingHorizontal: spacing.md,
+}
+
+const $listFooterStyles: ViewStyle = {
+  marginTop: spacing.md
 }
 
 const $heading: ViewStyle = {
@@ -155,7 +163,7 @@ const $heading: ViewStyle = {
 
 const $listRequestsContainer: ViewStyle = {
   flexDirection: 'column',
-  height: 'calc(100% - 56px)',
+  height: '100%',
   justifyContent: 'space-between',
   gap: spacing.md,
 }

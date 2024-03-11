@@ -9,6 +9,7 @@ const en = {
     createdAt: 'Created at: {{date}}',
     edit: 'Edit',
     remove: 'Remove',
+    search: 'Search'
   },
   welcomeScreen: {
     postscript:
@@ -102,11 +103,11 @@ const en = {
     navigateTo: "Create add request",
     userAutoComplete: {
       label: 'User',
-      placeholder: 'Enter at least 3 characters of email...'
+      placeholder: 'Select user'
     },
     chatRoomAutoComplete: {
       label: 'Chat room',
-      placeholder: 'Enter at least 3 characters of chat room name...'
+      placeholder: 'Select chat room.'
     }
   },
   demoCommunityScreen: {
