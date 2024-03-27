@@ -10,3 +10,7 @@ export interface UserInfoModel {
 export interface SaveAvatarPayload {
   image: SendImagePayload;
 }
+
+export interface BanUserPayloadModel {
+  reason: string;
+}

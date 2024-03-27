@@ -1,5 +1,5 @@
 import Api from "./api";
-import { GetUsersParams, SaveAvatarPayload, UserInfoModel } from "app/types/user.types"
+import { BanUserPayloadModel, GetUsersParams, SaveAvatarPayload, UserInfoModel } from "app/types/user.types"
 import { User } from "app/models/User"
 
 class UserApi extends Api {
@@ -18,6 +18,14 @@ class UserApi extends Api {
 
   async updateUser(userId: number, data: UserInfoModel): Promise<User> {
     return Api.patch({ route: `/user/${userId}`, needAuth: true, data })
+  }
+
+  async banUser(userId: number, data: BanUserPayloadModel): Promise<User> {
+    return Api.patch({ route: `/user/ban/${userId}`, needAuth: true, data })
+  }
+
+  async unBanUser(userId: number): Promise<User> {
+    return Api.patch({ route: `/user/unban/${userId}`, needAuth: true })
   }
 
   async changeAvatar(userId: number, data: SaveAvatarPayload): Promise<User> {

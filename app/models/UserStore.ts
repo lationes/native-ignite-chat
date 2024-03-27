@@ -1,7 +1,7 @@
 import { Instance, SnapshotOut, types } from "mobx-state-tree"
 import { User, UserModel } from "app/models/User"
 import UserApi from "app/services/api/user.api"
-import { GetUsersParams, SaveAvatarPayload, UserInfoModel } from "app/types/user.types"
+import { BanUserPayloadModel, GetUsersParams, SaveAvatarPayload, UserInfoModel } from "app/types/user.types"
 import { LoadingInfo } from "app/types/common.types"
 
 export const UserStoreModel = types
@@ -75,6 +75,44 @@ export const UserStoreModel = types
         const users = store.users.slice();
 
         const response = await UserApi.updateUser(userId, data);
+
+        if (response) {
+          const updateIndex = users.findIndex(user => user.id === userId);
+          users.splice(updateIndex, 1, response);
+          store.setUsers(users);
+          callback && callback(response);
+        }
+      } catch (e) {
+        store.setError(e.message);
+      } finally {
+        store.setLoading('', false);
+      }
+    },
+    async banUser(userId: number, data: BanUserPayloadModel, callback?: (data?: User) => void) {
+      try {
+        store.setLoading('ban', true);
+        const users = store.users.slice();
+
+        const response = await UserApi.banUser(userId, data);
+
+        if (response) {
+          const updateIndex = users.findIndex(user => user.id === userId);
+          users.splice(updateIndex, 1, response);
+          store.setUsers(users);
+          callback && callback(response);
+        }
+      } catch (e) {
+        store.setError(e.message);
+      } finally {
+        store.setLoading('', false);
+      }
+    },
+    async unBanUser(userId: number, callback?: (data?: User) => void) {
+      try {
+        store.setLoading('unban', true);
+        const users = store.users.slice();
+
+        const response = await UserApi.unBanUser(userId);
 
         if (response) {
           const updateIndex = users.findIndex(user => user.id === userId);

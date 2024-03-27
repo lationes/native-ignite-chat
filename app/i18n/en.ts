@@ -119,6 +119,11 @@ const en = {
   },
   adminPanel: {
     title: 'Admin Panel',
+    accordionListTitle: 'Actions',
+    actions: {
+      ban: 'Ban',
+      unban: 'Remove ban',
+    },
     userToBanSelect: {
       label: 'User to ban',
       placeholder: 'Select user'

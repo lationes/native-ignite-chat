@@ -13,6 +13,7 @@ import { ProfileScreen } from "app/screens/ProfileScreen/ProfileScreen"
 import FontAwesome from "react-native-vector-icons/FontAwesome"
 import MaterialIcons from "react-native-vector-icons/MaterialIcons"
 import { useStores } from "app/models"
+import { AdminPanel } from "app/screens/AdminPanel/AdminPanel"
 
 export type ChatTabParamList = {
   ChatRooms: { chatRoomId?: number | 'new'; }
@@ -97,7 +98,7 @@ export function ChatNavigator() {
 
       <Tab.Screen
         name="AdminPanel"
-        // component={ProfileScreen}
+        component={AdminPanel}
         options={{
           tabBarAccessibilityLabel: translate("chatNavigator.adminTab"),
           tabBarLabel: translate("chatNavigator.adminTab"),
