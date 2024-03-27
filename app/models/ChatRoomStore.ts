@@ -2,7 +2,7 @@ import { Instance, SnapshotOut, types } from "mobx-state-tree"
 import { ChatRoom, ChatRoomModel } from "./ChatRoom"
 import {
   GetChatRoomsParams,
-  CUChatRoomPayload,
+  CUChatRoomPayload, ConnectChatRoomPayload,
 } from "app/types/chatroom.types"
 import ChatRoomApi from "app/services/api/chatRoom.api"
 import { LoadingInfo } from "app/types/common.types"
@@ -91,11 +91,11 @@ export const ChatRoomStoreModel = types
         store.setLoading('', false);
       }
     },
-    async connectUserToChatRoom(chatRoomId: number, callback?: (data?: ChatRoom) => void) {
+    async connectUserToChatRoom(chatRoomId: number, data: ConnectChatRoomPayload, callback?: (data?: ChatRoom) => void) {
       try {
         store.setLoading('connect', false);
 
-        const response = await ChatRoomApi.connectUserToChatRoom(chatRoomId);
+        const response = await ChatRoomApi.connectUserToChatRoom(chatRoomId, data);
 
         if (response) {
           store.updateChatRoomById(chatRoomId, response);

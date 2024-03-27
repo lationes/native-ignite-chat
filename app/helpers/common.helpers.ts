@@ -1,4 +1,5 @@
 import moment from "moment";
+import Config from "app/config"
 
 export function calcPercentage(x: number, y: number, fixed = 2) {
   const percent = (x / y) * 100;
@@ -42,5 +43,14 @@ export const slugify = (str: string) =>
     .replace(/[^\w\s-]/g, "")
     .replace(/[\s_-]+/g, "-")
     .replace(/^-+|-+$/g, "")
+
+
+export const convertFileNameToLink = (fileName?: string | null) => {
+  if (!fileName) {
+    return '';
+  }
+
+  return Config.API_URL + `/${fileName}`;
+}
 
 

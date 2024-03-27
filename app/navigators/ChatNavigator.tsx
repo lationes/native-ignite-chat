@@ -9,10 +9,16 @@ import { colors, spacing, typography } from "../theme"
 import { AppStackParamList, AppStackScreenProps } from "./AppNavigator"
 import { ChatRoomScreen } from "app/screens/ChatRoomsScreen/ChatRoomsScreen"
 import { NotificationsScreen } from "app/screens/NotificationsScreen/NotificationsScreen"
+import { ProfileScreen } from "app/screens/ProfileScreen/ProfileScreen"
+import FontAwesome from "react-native-vector-icons/FontAwesome"
+import MaterialIcons from "react-native-vector-icons/MaterialIcons"
+import { useStores } from "app/models"
 
 export type ChatTabParamList = {
   ChatRooms: { chatRoomId?: number | 'new'; }
   Notifications: { page?: 'list' | 'new' },
+  Profile: undefined;
+  AdminPanel: undefined;
 }
 
 /**
@@ -35,7 +41,10 @@ const Tab = createBottomTabNavigator<ChatTabParamList>()
  * @returns {JSX.Element} The rendered `ChatNavigator`.
  */
 export function ChatNavigator() {
-    const { bottom } = useSafeAreaInsets()
+    const { bottom } = useSafeAreaInsets();
+  const {
+    authenticationStore: { isAdmin},
+  } = useStores();
 
   return (
     <Tab.Navigator
@@ -73,6 +82,31 @@ export function ChatNavigator() {
           ),
         }}
       />
+
+      <Tab.Screen
+        name="Profile"
+        component={ProfileScreen}
+        options={{
+          tabBarAccessibilityLabel: translate("chatNavigator.profileTab"),
+          tabBarLabel: translate("chatNavigator.profileTab"),
+          tabBarIcon: ({ focused }) => (
+            <FontAwesome name={'user-o'} color={focused ? colors.tint : undefined} size={30} />
+          ),
+        }}
+      />
+
+      <Tab.Screen
+        name="AdminPanel"
+        // component={ProfileScreen}
+        options={{
+          tabBarAccessibilityLabel: translate("chatNavigator.adminTab"),
+          tabBarLabel: translate("chatNavigator.adminTab"),
+          tabBarIcon: ({ focused }) => (
+            <MaterialIcons name={'admin-panel-settings'} color={focused ? colors.tint : undefined} size={30} />
+          ),
+        }}
+      />
+
     </Tab.Navigator>
   )
 }

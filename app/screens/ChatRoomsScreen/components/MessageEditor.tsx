@@ -37,6 +37,7 @@ export const MessageEditor = observer(function MessageEditor({
   useEffect(() => {
     if (message?.content) {
       setTextContent(message.content);
+      setOpen(true);
     }
   }, [message?.content]);
 

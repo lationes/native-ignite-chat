@@ -5,8 +5,7 @@ import {
   ViewStyle,
 } from "react-native"
 import {
-  Button,
-  Screen, Text, TextField,
+  Button, Text, TextField,
 } from "app/components"
 import { useStores } from "app/models"
 import { spacing } from "app/theme"

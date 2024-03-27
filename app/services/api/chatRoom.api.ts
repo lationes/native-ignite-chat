@@ -1,5 +1,5 @@
 import Api from "./api";
-import {GetChatRoomsParams, CUChatRoomPayload } from "app/types/chatroom.types"
+import { GetChatRoomsParams, CUChatRoomPayload, ConnectChatRoomPayload } from "app/types/chatroom.types"
 import { ChatRoom } from "app/models/ChatRoom"
 
 class ChatRoomApi extends Api {
@@ -20,8 +20,8 @@ class ChatRoomApi extends Api {
     return Api.patch({ route: `/chatroom/${chatRoomId}`, needAuth: true, data })
   }
 
-  async connectUserToChatRoom(chatRoomId: number): Promise<ChatRoom> {
-    return Api.patch({ route: `/chatroom/connect/${chatRoomId}`, needAuth: true })
+  async connectUserToChatRoom(chatRoomId: number, data: ConnectChatRoomPayload): Promise<ChatRoom> {
+    return Api.patch({ route: `/chatroom/connect/${chatRoomId}`, needAuth: true, data })
   }
 
   async deleteChatRoom(chatRoomId: number): Promise<ChatRoom> {

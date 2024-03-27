@@ -10,7 +10,7 @@ export const AddRequestModel = types
     authorId: types.number,
     userId: types.number,
     chatRoomId: types.number,
-    message: types.string,
+    message: types.maybeNull(types.string),
     createdAt: types.string,
   })
 

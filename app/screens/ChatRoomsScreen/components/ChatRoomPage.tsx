@@ -10,7 +10,6 @@ import { type ContentStyle } from "@shopify/flash-list"
 import {
   EmptyState,
   ListView,
-  Screen,
   Text,
 } from "app/components"
 import { isRTL } from "app/i18n"
@@ -74,7 +73,7 @@ export const ChatRoomPage: FC<IProps> = observer(
       }
     }
 
-    const handleeEditMessage = (messageId?: number) => {
+    const handleEditMessage = (messageId?: number) => {
       if (messageId) {
         setEditedMessageId(messageId);
       }
@@ -146,7 +145,7 @@ export const ChatRoomPage: FC<IProps> = observer(
             renderItem={({ item }) => (
               <MessageCard
                 messageId={item.id}
-                editMessage={handleeEditMessage}
+                editMessage={handleEditMessage}
                 deleteMessage={handleDeleteMessage}
               />
             )}

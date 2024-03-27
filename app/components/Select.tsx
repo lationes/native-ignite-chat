@@ -42,7 +42,7 @@ interface IProps {
   status?: "error";
 }
 
-export const AutoComplete: FC<IProps> = observer(({
+export const Select: FC<IProps> = observer(({
                                                     label,
                                                     labelTx,
                                                     labelTxOptions,
@@ -174,6 +174,7 @@ const dropdownRowStyle: ViewStyle = {
   padding: spacing.md,
   backgroundColor: 'inherit',
   borderBottomColor: colors.border,
+  height: '100%',
 };
 
 const dropdownRowTxtStyle: TextStyle =  {

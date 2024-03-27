@@ -25,7 +25,7 @@ export const MessageCard = observer(function MessageCard({
 
   const {
     userStore: { users },
-    authenticationStore: { authenticatedUserId },
+    authenticationStore: { authenticatedUserId, isAdmin },
     messageStore: { messages },
   } = useStores();
 
@@ -55,6 +55,14 @@ export const MessageCard = observer(function MessageCard({
 
     return false;
   }, [authenticatedUserId, message])
+
+  const hasAccessToDelete = useMemo(() => {
+    if (authenticatedUserId && message) {
+      return authenticatedUserId === message.authorId || isAdmin;
+    }
+
+    return false;
+  }, [authenticatedUserId, message, isAdmin])
 
   const dateMetadata = useMemo(() => {
     if (!message) {
@@ -93,22 +101,26 @@ export const MessageCard = observer(function MessageCard({
       }
       content={message?.content}
       contentStyle={$content}
-      FooterComponent={ hasAccessToEdit ? (
+      FooterComponent={
         <View style={$footer}>
-          <Button
-            testID="message-editor-button"
-            tx={"common.edit"}
-            preset="default"
-            onPress={() => editMessage(message?.id)}
-          />
-          <Button
-            testID="message-editor-button"
-            tx={"common.remove"}
-            preset="dangerous"
-            onPress={() => deleteMessage(message?.id)}
-          />
+          { hasAccessToEdit ? (
+            <Button
+              testID="message-editor-button"
+              tx={"common.edit"}
+              preset="default"
+              onPress={() => editMessage(message?.id)}
+            />
+          ) : null }
+          { hasAccessToDelete ? (
+            <Button
+              testID="message-editor-button"
+              tx={"common.remove"}
+              preset="dangerous"
+              onPress={() => deleteMessage(message?.id)}
+            />
+          ) : null }
         </View>
-      ) : undefined}
+      }
       // RightComponent={<Image source={imageUri} style={$itemThumbnail} />}
     />
   )

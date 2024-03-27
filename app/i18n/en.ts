@@ -9,7 +9,8 @@ const en = {
     createdAt: 'Created at: {{date}}',
     edit: 'Edit',
     remove: 'Remove',
-    search: 'Search'
+    search: 'Search',
+    save: 'Save',
   },
   welcomeScreen: {
     postscript:
@@ -50,9 +51,15 @@ const en = {
     tapToSignUp: "Tap to sign up!",
     hint: "Hint: check if you have your Caps Lock button on :)",
   },
+  profileScreen: {
+    avatarEditorTitle: 'Profile avatar',
+    deleteAvatarConfirmationModelTitle: 'A you sure you want to delete your avatar?'
+  },
   chatNavigator: {
     chatRoomsTab: "Chat Rooms",
     notificationsTab: "Notifications",
+    profileTab: 'Profile',
+    adminTab: 'Admin Panel',
   },
   chatRoomScreen: {
     title: '{{title}}',
@@ -109,6 +116,21 @@ const en = {
       label: 'Chat room',
       placeholder: 'Select chat room.'
     }
+  },
+  adminPanel: {
+    title: 'Admin Panel',
+    userToBanSelect: {
+      label: 'User to ban',
+      placeholder: 'Select user'
+    },
+    reasonTextField: {
+      title: 'Reason',
+      placeholder: 'Specify ban reason',
+    },
+  },
+  imageEditor: {
+    camera: 'Camera',
+    gallery: 'Gallery',
   },
   demoCommunityScreen: {
     title: "Connect with the community",

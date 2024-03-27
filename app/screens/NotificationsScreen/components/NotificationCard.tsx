@@ -27,6 +27,8 @@ export const NotificationCard = observer(function NotificationCard({
     addRequestStore: { addRequests },
   } = useStores();
 
+  const usersProxy = users.slice();
+
   const addRequest = useMemo(() => {
     if (addRequestId && addRequests?.length) {
       return addRequests.slice().find(addRequest => addRequest.id === addRequestId)
@@ -36,12 +38,12 @@ export const NotificationCard = observer(function NotificationCard({
   }, [addRequestId, addRequests])
 
   const author = useMemo(() => {
-    if (users && addRequest) {
-      return users.find(user => user.id === addRequest.authorId)
+    if (usersProxy && addRequest) {
+      return usersProxy.find(user => user.id === addRequest.authorId)
     }
 
     return null;
-  }, [users, addRequest])
+  }, [usersProxy, addRequest])
 
   const dateMetadata = useMemo(() => {
     if (addRequest) {
@@ -73,19 +75,19 @@ export const NotificationCard = observer(function NotificationCard({
           </Text>
         </View>
       }
-      content={addRequest?.message}
-      FooterComponent={ <View>
+      contentStyle={$content}
+      content={addRequest?.message || ''}
+      FooterComponent={
+      <View style={$footer}>
         <Button
           testID="message-editor-button"
           tx={"common.accept"}
-          style={$cardButton}
           preset="filled"
           onPress={() => joinChatRoom(addRequest?.id)}
         />
         <Button
           testID="message-editor-button"
           tx={"common.remove"}
-          style={$cardButton}
           preset="filled"
           onPress={() => deleteAddRequest(addRequest?.id)}
         />
@@ -99,23 +101,27 @@ export const NotificationCard = observer(function NotificationCard({
 const $item: ViewStyle = {
   padding: spacing.md,
   marginTop: spacing.md,
-  minHeight: 120,
 }
 
 const $metadata: TextStyle = {
   color: colors.textDim,
   marginTop: spacing.xs,
-  flexDirection: "row",
+  flexDirection: "column",
   justifyContent: 'space-between',
+}
+
+const $content: ViewStyle = {
+  marginVertical: spacing.md,
+}
+
+const $footer: ViewStyle = {
+  marginTop: spacing.md,
+  gap: spacing.xs,
 }
 
 const $metadataText: TextStyle = {
   color: colors.textDim,
   marginEnd: spacing.md,
   marginBottom: spacing.xs,
-}
-
-const $cardButton: ViewStyle = {
-  height: 32,
 }
 // #endregion

@@ -139,16 +139,16 @@ export default class Api {
 
     if (data) {
       if (dataType === 'formData') {
-        headers = { ...headers, 'Content-Type': 'multipart/form-data' };
         const formData = new FormData;
         for (let fieldName in sendData) {
           formData.append(fieldName, sendData[fieldName]);
         }
-        sendData = data;
+        sendData = formData;
+        headers = { ...headers, 'Content-Type': 'multipart/form-data' };
       }
 
       if (dataType === 'json') {
-        headers = { ...headers, 'Ccontent-Type': 'application/json', };
+        headers = { ...headers, 'Content-Type': 'application/json', };
       }
     }
 

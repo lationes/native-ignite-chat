@@ -1,6 +1,7 @@
 import { observer } from "mobx-react-lite"
 import React, { FC, useEffect, useMemo, useState } from "react"
 import {
+  TextStyle,
   View,
   ViewStyle,
 } from "react-native"
@@ -9,8 +10,8 @@ import {
   Screen, Text,
 } from "app/components"
 import { useStores } from "app/models"
-import { spacing } from "app/theme"
-import { AutoComplete } from "app/components/AutoComplete"
+import { colors, spacing } from "app/theme"
+import { Select } from "app/components/Select"
 import { CommonItemModel, KeyValueModel } from "app/types/common.types"
 
 interface IProps {
@@ -22,13 +23,13 @@ export const CreateAddRequestPage: FC<IProps> = observer(
   function CreateAddRequestPage({ goBack }) {
     const {
       authenticationStore: { authenticatedUserId},
-      addRequestStore: { createAddRequest },
-      userStore: { loading: loadingUsers, getUsers, clearUserSuggestions, userSuggestions },
-      chatRoomStore: { loading: loadingChatRooms, fetchAvailableChatRooms, clearChatRoomSuggestions, chatRoomSuggestions },
+      addRequestStore: { createAddRequest, error, setError },
+      userStore: { loading: loadingUsers, getUsers, users },
+      chatRoomStore: { loading: loadingChatRooms, fetchAvailableChatRooms, chatRooms },
     } = useStores();
 
-    const userSuggestionsProxy = userSuggestions.slice();
-    const chatRoomSuggestionsProxy = chatRoomSuggestions.slice();
+    const userSuggestionsProxy = users.slice();
+    const chatRoomSuggestionsProxy = chatRooms.slice();
 
     const [selectedUserId, setSelectedUserId] = useState<number | null>();
     const [selectedChatRoomId, setSelectedChatRoomId] = useState<number | null>();
@@ -42,11 +43,11 @@ export const CreateAddRequestPage: FC<IProps> = observer(
             id: user.id,
             title: user.email,
           }
-        })
+        }).filter(user => user.id !== authenticatedUserId)
       }
 
       return null;
-    }, [userSuggestionsProxy]);
+    }, [userSuggestionsProxy, authenticatedUserId]);
 
     const chatRoomDropdownItems = useMemo(() => {
       if (chatRoomSuggestionsProxy) {
@@ -63,12 +64,14 @@ export const CreateAddRequestPage: FC<IProps> = observer(
 
     useEffect(() => {
       if (authenticatedUserId) {
-        getUsers({}, undefined, 'userSuggestions' );
-        fetchAvailableChatRooms(authenticatedUserId,{}, undefined, 'chatRoomSuggestions');
+        getUsers({}, undefined );
+        fetchAvailableChatRooms(authenticatedUserId,{}, undefined);
       }
     }, [authenticatedUserId]);
 
     const handleSelectItem = (item: CommonItemModel, field: 'user' | 'chatRoom') => {
+      setError(undefined);
+
       if (!item) {
         return;
       }
@@ -95,7 +98,7 @@ export const CreateAddRequestPage: FC<IProps> = observer(
       }
 
       if (selectedUserId && selectedChatRoomId) {
-        await createAddRequest({ userId: selectedUserId, chatRoomId: selectedChatRoomId }, goBack);
+        await createAddRequest({ userId: selectedUserId, chatRoomId: selectedChatRoomId }, () => goBack());
       }
     }
 
@@ -109,8 +112,9 @@ export const CreateAddRequestPage: FC<IProps> = observer(
           <Text preset="heading" tx="notificationsScreen.addRequestEditorTitle" />
         </View>
         <View style={$pageContent}>
+          {error && <Text text={error} size="sm" weight="light" style={$hint} />}
           <View style={$inputContainers}>
-            <AutoComplete
+            <Select
               labelTx={'notificationsScreen.userAutoComplete.label'}
               placeholderTx={'notificationsScreen.userAutoComplete.placeholder'}
               dataSet={userDropdownItems}
@@ -119,7 +123,7 @@ export const CreateAddRequestPage: FC<IProps> = observer(
               status={errors?.selectedUserId ? 'error' : undefined}
               helper={errors?.selectedUserId ? errors?.selectedUserId : undefined}
             />
-            <AutoComplete
+            <Select
               labelTx={'notificationsScreen.chatRoomAutoComplete.label'}
               placeholderTx={'notificationsScreen.chatRoomAutoComplete.placeholder'}
               dataSet={chatRoomDropdownItems}
@@ -179,5 +183,11 @@ const $buttonContainer: ViewStyle = {
   width: '100%',
   gap: spacing.xs,
 }
+
+const $hint: TextStyle = {
+  color: colors.tint,
+  marginBottom: spacing.md,
+}
+
 
 // #endregion

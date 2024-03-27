@@ -1,18 +1,23 @@
 import { Instance, SnapshotOut, types } from "mobx-state-tree";
 import { AddRequest, AddRequestModel } from "app/models/AddRequest";
-import { LoadingInfo } from "app/types/common.types";
+import { LoadingInfo, ResponseErrorData } from "app/types/common.types"
 import AddRequestApi from "app/services/api/add-request.api";
 import { CreateAddRequestPayload } from "app/types/add-request.types";
+import { AxiosError } from "axios"
 
 export const AddRequestStoreModel = types
   .model("AddRequestStore")
   .props({
     addRequests: types.optional(types.array(AddRequestModel), []),
     loading: types.optional(types.frozen<LoadingInfo>(), { action: '', loading: false }),
+    error: types.maybe(types.string),
   })
   .actions((store) => ({
     setLoading(action: string, loading: boolean) {
       store.loading = { action, loading };
+    },
+    setError(error: string | undefined) {
+      store.error = error;
     },
     setAddRequests(addRequests: AddRequest[]) {
       store.addRequests.replace(addRequests);
@@ -49,9 +54,28 @@ export const AddRequestStoreModel = types
         const response = await AddRequestApi.createAddRequest(data);
 
         if (response) {
-          store.addAddRequest(response);
           callback && callback(response);
         }
+      } catch (e) {
+        const error = e as AxiosError<ResponseErrorData>;
+        store.setError(error.response?.data.message as string);
+      } finally {
+        store.setLoading('', false);
+      }
+    },
+    async acceptAddRequest(id: number, callback?: (data?: AddRequest) => void) {
+      try {
+        store.setLoading('accept', false);
+
+        const response = await AddRequestApi.acceptAddRequest(id);
+
+        if (response) {
+          store.removeAddRequest(id);
+          callback && callback(response);
+        }
+      } catch (e) {
+        const error = e as AxiosError<ResponseErrorData>;
+        store.setError(error.response?.data.message as string);
       } finally {
         store.setLoading('', false);
       }

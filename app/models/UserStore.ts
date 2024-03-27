@@ -1,7 +1,7 @@
 import { Instance, SnapshotOut, types } from "mobx-state-tree"
 import { User, UserModel } from "app/models/User"
 import UserApi from "app/services/api/user.api"
-import { GetUsersParams } from "app/types/user.types"
+import { GetUsersParams, SaveAvatarPayload, UserInfoModel } from "app/types/user.types"
 import { LoadingInfo } from "app/types/common.types"
 
 export const UserStoreModel = types
@@ -50,7 +50,7 @@ export const UserStoreModel = types
     async getUserById(userId: number, callback?: (data?: User) => void) {
       try {
         store.setLoading('getOne', true);
-        const users = store.users.slice(); // Using slice() for creating a shallow copy
+        const users = store.users.slice();
         const response = await UserApi.getUserById(userId);
 
         if (response) {
@@ -65,6 +65,63 @@ export const UserStoreModel = types
           store.setUsers(users);
           callback && callback(response);
         }
+      } finally {
+        store.setLoading('', false);
+      }
+    },
+    async updateUser(userId: number, data: UserInfoModel, callback?: (data?: User) => void) {
+      try {
+        store.setLoading('update', true);
+        const users = store.users.slice();
+
+        const response = await UserApi.updateUser(userId, data);
+
+        if (response) {
+          const updateIndex = users.findIndex(user => user.id === userId);
+          users.splice(updateIndex, 1, response);
+          store.setUsers(users);
+          callback && callback(response);
+        }
+      } catch (e) {
+        store.setError(e.message);
+      } finally {
+        store.setLoading('', false);
+      }
+    },
+    async changeAvatar(userId: number, data: SaveAvatarPayload, callback?: (data?: User) => void) {
+      try {
+        store.setLoading('update-image', true);
+        const users = store.users.slice();
+
+        const response = await UserApi.changeAvatar(userId, data);
+
+        if (response) {
+          const updateIndex = users.findIndex(user => user.id === userId);
+          users.splice(updateIndex, 1, response);
+          store.setUsers(users);
+          callback && callback(response);
+        }
+      } catch (e) {
+        store.setError(e.message);
+      } finally {
+        store.setLoading('', false);
+      }
+    },
+    async removeAvatar(userId: number, callback?: (data?: User) => void) {
+      try {
+        store.setLoading('delete-image', true);
+        const users = store.users.slice();
+
+        const response = await UserApi.removeAvatar(userId);
+
+        if (response) {
+          const updateIndex = users.findIndex(user => user.id === userId);
+          users.splice(updateIndex, 1, response);
+          store.setUsers(users);
+          callback && callback(response);
+        }
+      } catch (e) {
+        store.setError(e.message);
       } finally {
         store.setLoading('', false);
       }

@@ -1,8 +1,10 @@
 import React from 'react';
-import { Modal, StyleSheet, Text, View} from 'react-native';
+import { StyleSheet, Text, View} from 'react-native';
 import { Button } from "app/components/Button"
 import { translate } from "app/i18n"
 import { TextProps } from "app/components/Text"
+import { colors, spacing } from "app/theme"
+import ModalBasic from "app/components/ModalBasic"
 
 interface IProps {
   open: boolean;
@@ -11,6 +13,12 @@ interface IProps {
   titleTx?: TextProps["tx"];
   titleTxOptions?: TextProps["txOptions"];
   okCallback: () => void;
+  okTitle?: TextProps["text"];
+  okTitleTx?: TextProps["tx"];
+  okTitleTxOptions?: TextProps["txOptions"];
+  cancelTitle?: TextProps["text"];
+  cancelTitleTx?: TextProps["tx"];
+  cancelTitleTxOptions?: TextProps["txOptions"];
   cancelCallback?: () => void;
 }
 
@@ -20,6 +28,12 @@ export function ConfirmationModal ({
                                      title,
                                      titleTx,
                                      titleTxOptions,
+                                     okTitle,
+                                     okTitleTx,
+                                     okTitleTxOptions,
+                                     cancelTitle,
+                                     cancelTitleTx,
+                                     cancelTitleTxOptions,
                                      okCallback,
                                      cancelCallback,
                            }: IProps) {
@@ -28,28 +42,36 @@ export function ConfirmationModal ({
     cancelCallback && cancelCallback();
   }
 
+  const closeModalSuccess = () => {
+    setOpen(false);
+    okCallback && okCallback();
+  }
+
   const titleContent = titleTx ? translate(titleTx, titleTxOptions) : title;
 
   return (
-    <Modal
-      animationType="slide"
-      transparent={true}
-      visible={open}
-      onRequestClose={closeModal}>
+    <ModalBasic
+      open={open}
+      close={closeModal}
+    >
       <View style={styles.centeredView}>
         <View style={styles.modalView}>
           <Text style={styles.modalText}>{titleContent}</Text>
           <View style={styles.buttonContainer}>
             <Button
               testID="message-editor-button"
-              tx={"common.edit"}
+              tx={okTitleTx || 'common.ok'}
+              txOptions={okTitleTxOptions}
+              text={okTitle}
               preset="default"
               style={styles.button}
-              onPress={okCallback}
+              onPress={closeModalSuccess}
             />
             <Button
               testID="message-editor-button"
-              tx={"common.cancel"}
+              tx={cancelTitleTx || "common.cancel"}
+              txOptions={cancelTitleTxOptions}
+              text={cancelTitle}
               preset="default"
               style={styles.button}
               onPress={closeModal}
@@ -57,7 +79,7 @@ export function ConfirmationModal ({
           </View>
         </View>
       </View>
-    </Modal>
+    </ModalBasic>
   );
 };
 
@@ -69,12 +91,12 @@ const styles = StyleSheet.create({
     marginTop: 22,
   },
   modalView: {
-    margin: 20,
-    backgroundColor: 'white',
+    backgroundColor: colors.palette.neutral200,
     borderRadius: 20,
-    padding: 35,
+    padding: spacing.md,
     alignItems: 'center',
     shadowColor: '#000',
+    gap: spacing.md,
     shadowOffset: {
       width: 0,
       height: 2,

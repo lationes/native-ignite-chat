@@ -16,6 +16,10 @@ class AddRequestApi extends Api {
     return Api.post({ route: '/add-request', needAuth: true, data })
   }
 
+  async acceptAddRequest(id: number): Promise<AddRequest> {
+    return Api.post({ route: `/add-request/accept/${id}`, needAuth: true })
+  }
+
   async deleteAddRequest(addRequestId: number): Promise<AddRequest> {
     return Api.delete({ route: `/add-request/${addRequestId}`, needAuth: true })
   }

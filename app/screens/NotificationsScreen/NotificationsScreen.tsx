@@ -1,5 +1,5 @@
 import React, { FC, useEffect, useMemo } from "react"
-import { ActivityIndicator, ImageStyle, Platform, StyleProp, View, ViewStyle } from "react-native"
+import { ActivityIndicator, ImageStyle, View, ViewStyle } from "react-native"
 import { type ContentStyle } from "@shopify/flash-list"
 import { Button, EmptyState, ListView, Screen, Text } from "app/components"
 import { ChatTabParamList, ChatTabScreenProps } from "app/navigators/ChatNavigator"
@@ -19,10 +19,12 @@ export const NotificationsScreen: FC<ChatTabScreenProps<"Notifications">> = obse
     const params = route.params;
 
     const {
-      chatRoomStore: { connectUserToChatRoom },
+      chatRoomStore: { fetchAvailableChatRooms },
       authenticationStore: { authenticatedUserId },
-      addRequestStore: { getAddRequestsByUserId, addRequests, deleteAddRequest, loading },
+      addRequestStore: { getAddRequestsByUserId, addRequests, deleteAddRequest, loading, acceptAddRequest },
     } = useStores()
+
+    const addRequestsProxy = addRequests.slice();
 
     const isLoading = useMemo(() => {
       return loading.action === 'get' && loading.loading;
@@ -32,11 +34,11 @@ export const NotificationsScreen: FC<ChatTabScreenProps<"Notifications">> = obse
       if (authenticatedUserId) {
         getAddRequestsByUserId(authenticatedUserId);
       }
-    }, [authenticatedUserId])
+    }, [authenticatedUserId]);
 
     async function getAddRequests() {
       if (authenticatedUserId) {
-        await getAddRequestsByUserId(authenticatedUserId)
+        await getAddRequestsByUserId(authenticatedUserId);
       }
     }
 
@@ -63,12 +65,13 @@ export const NotificationsScreen: FC<ChatTabScreenProps<"Notifications">> = obse
     }
 
     const handleAcceptAddRequest = async (addRequestId?: number) => {
-      const addRequest = addRequests.slice().find(addRequest => addRequest.id === addRequestId);
+      const addRequest = addRequestsProxy.find(addRequest => addRequest.id === addRequestId);
 
-      if (addRequest) {
-        await connectUserToChatRoom(addRequest.chatRoomId, async () => {
-          await getAddRequests();
-          navigateToChatRoom(addRequest.chatRoomId);
+      if (addRequestId && addRequest && authenticatedUserId) {
+        const { chatRoomId } = addRequest;
+
+        await acceptAddRequest(addRequestId, async () => {
+          await fetchAvailableChatRooms(authenticatedUserId, {}, () => navigateToChatRoom(chatRoomId));
         });
       }
     }
@@ -82,7 +85,7 @@ export const NotificationsScreen: FC<ChatTabScreenProps<"Notifications">> = obse
           <View style={$listRequestsContainer}>
             <ListView<AddRequest>
               contentContainerStyle={$listContentContainer}
-              data={addRequests.slice() || []}
+              data={addRequestsProxy || []}
               refreshing={isLoading}
               estimatedItemSize={177}
               onRefresh={getAddRequests}

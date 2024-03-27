@@ -21,6 +21,7 @@ export const AuthenticationStoreModel = types
     accessToken: types.maybe(types.string),
     refreshToken: types.maybe(types.string),
     authenticatedUserId: types.maybe(types.number),
+    authenticatedUserRole: types.maybe(types.string),
     authData: types.optional(AuthorizationDataModel, { email: '', password: ''}),
     error: types.maybe(types.string),
     loading:  types.optional(types.frozen<LoadingInfo>(), { action: '', loading: false }),
@@ -38,6 +39,7 @@ export const AuthenticationStoreModel = types
     },
     setAuthenticatedUser(user: User) {
       store.authenticatedUserId = user.id;
+      store.authenticatedUserRole = user.role;
     },
     setAuthData(data: AuthorizationData) {
       store.authData = data;
@@ -47,6 +49,7 @@ export const AuthenticationStoreModel = types
       store.accessToken = undefined;
       store.authData = { email: '', password: ''};
       store.authenticatedUserId = undefined;
+      store.authenticatedUserRole = undefined;
     },
     setError(error: string | undefined) {
       store.error = error;
@@ -61,6 +64,9 @@ export const AuthenticationStoreModel = types
   .views((store) => ({
     get isAuthenticated() {
       return !!store.accessToken
+    },
+    get isAdmin() {
+      return store.authenticatedUserRole === 'ADMIN';
     },
     get validationError() {
       const { email, password } = store.authData;

@@ -65,15 +65,12 @@ const AppStack = observer(function AppStack() {
   } = useStores();
 
   useEffect(() => {
-    getUsers({ })
-  }, [getUsers])
-
-  useEffect(() => {
     if (authenticatedUserId) {
       fetchAvailableChatRooms(authenticatedUserId, {});
       getAddRequestsByUserId(authenticatedUserId);
+      getUsers({ })
     }
-  }, [fetchAvailableChatRooms, getAddRequestsByUserId, authenticatedUserId])
+  }, [authenticatedUserId])
 
   return (
     <Stack.Navigator

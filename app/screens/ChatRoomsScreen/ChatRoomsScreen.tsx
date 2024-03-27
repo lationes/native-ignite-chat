@@ -1,5 +1,5 @@
 import { Link, RouteProp, useRoute } from "@react-navigation/native"
-import React, { FC, useEffect, useMemo, useRef, useState } from "react"
+import React, { FC, useEffect, useRef, useState } from "react"
 import { Image, ImageStyle, Platform, View, ViewStyle } from "react-native"
 import { Drawer } from "react-native-drawer-layout"
 import { type ContentStyle } from "@shopify/flash-list"
