@@ -140,13 +140,11 @@ export const AuthenticationStoreModel = types
     async logout(callback?: () => void) {
       try {
         store.setLoading('logout', true);
-        const logoutResponse = await AuthApi.logout();
+        await AuthApi.logout();
+        store.clearAuthData();
+        store.clearError();
+        callback && callback();
 
-        if (logoutResponse) {
-          store.clearAuthData();
-          store.clearError();
-          callback && callback();
-        }
       } finally {
         store.setLoading('', false);
       }

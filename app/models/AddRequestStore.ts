@@ -44,6 +44,7 @@ export const AddRequestStoreModel = types
           callback && callback(response);
         }
       } finally {
+        console.log('stopLoading')
         store.setLoading('', false);
       }
     },
