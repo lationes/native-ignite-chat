@@ -141,11 +141,10 @@ export const AuthenticationStoreModel = types
       try {
         store.setLoading('logout', true);
         await AuthApi.logout();
+      } finally {
         store.clearAuthData();
         store.clearError();
         callback && callback();
-
-      } finally {
         store.setLoading('', false);
       }
     },

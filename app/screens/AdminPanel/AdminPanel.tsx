@@ -36,12 +36,12 @@ const adminActions: AdminActionModel[] = [
 export const AdminPanel: FC<ChatTabScreenProps<"AdminPanel">> = observer(function AdminPanel(_props) {
   const [accordionState, setAccordionState] = useState<typeof adminActions>(adminActions);
 
-  const handleAccordion = (name: string) => {
+  const handleAccordion = (name: string, isExpanded?: boolean) => {
     const newAccordionState = [...accordionState];
     const currentAccordionIndex = newAccordionState.findIndex(acc => acc.name === name);
     const currentAccordion = {...newAccordionState[currentAccordionIndex]};
 
-    newAccordionState.splice(currentAccordionIndex, 1, {...currentAccordion, expanded: !currentAccordion.expanded })
+    newAccordionState.splice(currentAccordionIndex, 1, {...currentAccordion, expanded: isExpanded || !currentAccordion.expanded })
 
     setAccordionState(newAccordionState);
   }
@@ -79,7 +79,7 @@ export const AdminPanel: FC<ChatTabScreenProps<"AdminPanel">> = observer(functio
           >
             <View style={$accordionInnerContent}>
               { (item.name === 'ban' || item.name === 'unban') && (
-                <BanUser action={item.name} />
+                <BanUser closeAccordion={() => handleAccordion(item.name, false)} action={item.name} />
               )}
             </View>
           </ListItem.Accordion>

@@ -90,6 +90,10 @@ export default class Api {
             }
           }
 
+          if (Api.isRefreshing) {
+            throw error.response;
+          }
+
           // Add the original request to the queue
           return new Promise<void>((resolve, reject) => {
             Api.refreshAndRetryQueue.push({ config: originalRequest, resolve, reject });

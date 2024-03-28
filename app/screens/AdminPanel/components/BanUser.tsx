@@ -12,17 +12,18 @@ import { Button, Text, TextField } from "app/components"
 import { Select } from "app/components/Select"
 interface IProps {
   action: 'ban' | 'unban';
+  closeAccordion: () => void;
 }
 
 
 export const BanUser: FC<IProps> = observer(
-  function BanUser({ action }) {
+  function BanUser({ action, closeAccordion }) {
     const {
       authenticationStore: { authenticatedUserId },
-      userStore: { userSuggestions, banUser, unBanUser, error, setError, loading, getUsers },
+      userStore: { users, banUser, unBanUser, error, setError, loading, getUsers },
     } = useStores();
 
-    const userSuggestionsProxy = userSuggestions.slice();
+    const userSuggestionsProxy = users.slice();
 
     const userDropdownItems = useMemo(() => {
       if (userSuggestionsProxy) {
@@ -75,6 +76,12 @@ export const BanUser: FC<IProps> = observer(
       setReason(value);
     }
 
+    const clearData = () => {
+      setUserId(null);
+      setReason('');
+      setErrors(null);
+    }
+
     const handleAction = async () => {
       let errors = {};
 
@@ -91,12 +98,17 @@ export const BanUser: FC<IProps> = observer(
         return;
       }
 
-      if (userId && reason && action === 'ban') {
-        await banUser(userId, { reason });
+      const callback = () => {
+        closeAccordion && closeAccordion();
+        clearData();
       }
 
-      if (userId && reason && action === 'unban') {
-        await unBanUser(userId);
+      if (userId && reason && action === 'ban') {
+        await banUser(userId, { reason }, callback);
+      }
+
+      if (userId && action === 'unban') {
+        await unBanUser(userId, callback);
       }
     }
 
