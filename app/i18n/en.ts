@@ -128,6 +128,10 @@ const en = {
       label: 'User to ban',
       placeholder: 'Select user'
     },
+    userToUnBanSelect: {
+      label: 'User to ban',
+      placeholder: 'Select user'
+    },
     reasonTextField: {
       title: 'Reason',
       placeholder: 'Specify ban reason',

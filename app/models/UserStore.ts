@@ -16,6 +16,9 @@ export const UserStoreModel = types
     setError(error: string | undefined) {
       store.error = error;
     },
+    clearError() {
+      store.error = '';
+    },
     setLoading(action: string, loading: boolean) {
       store.loading = { action, loading };
     },
@@ -42,6 +45,7 @@ export const UserStoreModel = types
             store.setUsers(response);
           }
           callback && callback(response);
+          store.clearError();
         }
       } finally {
         store.setLoading('', false);
@@ -64,6 +68,7 @@ export const UserStoreModel = types
 
           store.setUsers(users);
           callback && callback(response);
+          store.clearError();
         }
       } finally {
         store.setLoading('', false);
@@ -81,6 +86,7 @@ export const UserStoreModel = types
           users.splice(updateIndex, 1, response);
           store.setUsers(users);
           callback && callback(response);
+          store.clearError();
         }
       } catch (e) {
         store.setError(e.message);
@@ -100,6 +106,7 @@ export const UserStoreModel = types
           users.splice(updateIndex, 1, response);
           store.setUsers(users);
           callback && callback(response);
+          store.clearError();
         }
       } catch (e) {
         store.setError(e.message);
@@ -119,6 +126,7 @@ export const UserStoreModel = types
           users.splice(updateIndex, 1, response);
           store.setUsers(users);
           callback && callback(response);
+          store.clearError();
         }
       } catch (e) {
         store.setError(e.message);
@@ -138,6 +146,7 @@ export const UserStoreModel = types
           users.splice(updateIndex, 1, response);
           store.setUsers(users);
           callback && callback(response);
+          store.clearError();
         }
       } catch (e) {
         store.setError(e.message);
@@ -157,6 +166,7 @@ export const UserStoreModel = types
           users.splice(updateIndex, 1, response);
           store.setUsers(users);
           callback && callback(response);
+          store.clearError();
         }
       } catch (e) {
         store.setError(e.message);
@@ -181,6 +191,7 @@ export const UserStoreModel = types
           users.splice(deleteIndex, 1);
           store.setUsers(users);
           callback && callback(response);
+          store.clearError();
         }
       } catch (e) {
         store.setError(e.message);

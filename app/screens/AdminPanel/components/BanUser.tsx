@@ -1,5 +1,5 @@
 import { observer } from "mobx-react-lite"
-import React, { FC, useMemo, useState } from "react"
+import React, { FC, useEffect, useMemo, useState } from "react"
 import {
   TextStyle,
   View,
@@ -19,7 +19,7 @@ export const BanUser: FC<IProps> = observer(
   function BanUser({ action }) {
     const {
       authenticationStore: { authenticatedUserId },
-      userStore: { userSuggestions, banUser, unBanUser, error, setError, loading },
+      userStore: { userSuggestions, banUser, unBanUser, error, setError, loading, getUsers },
     } = useStores();
 
     const userSuggestionsProxy = userSuggestions.slice();
@@ -36,6 +36,12 @@ export const BanUser: FC<IProps> = observer(
 
       return null;
     }, [userSuggestionsProxy, authenticatedUserId]);
+
+    useEffect(() => {
+      if (authenticatedUserId) {
+        getUsers({}, undefined );
+      }
+    }, [authenticatedUserId]);
 
     const [userId, setUserId] = useState<number | null>(null);
     const [reason, setReason] = useState<string>('');
@@ -100,8 +106,8 @@ export const BanUser: FC<IProps> = observer(
           {error && <Text text={error} size="sm" weight="light" style={$hint} />}
           <View style={$inputContainers}>
             <Select
-              labelTx={'adminPanel.userToBanSelect.label'}
-              placeholderTx={'adminPanel.userToBanSelect.placeholder'}
+              labelTx={`adminPanel.${action === 'ban' ? 'userToBanSelect' : 'userToUnBanSelect'}.label`}
+              placeholderTx={`adminPanel.${action === 'ban' ? 'userToBanSelect' : 'userToUnBanSelect'}.placeholder`}
               dataSet={userDropdownItems}
               selectItem={handleSelectItem}
               loading={loading.action === 'get' && loading.loading}

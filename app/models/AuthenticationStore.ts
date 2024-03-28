@@ -101,7 +101,7 @@ export const AuthenticationStoreModel = types
         if (loginResponse) {
           store.setTokenPair(loginResponse);
           store.setAuthenticatedUser(loginResponse.user);
-          store.setError(undefined);
+          store.clearError();
           callback && callback(loginResponse);
         }
       } catch (e) {
@@ -121,6 +121,7 @@ export const AuthenticationStoreModel = types
           store.setAuthenticatedUser(registrationResponse.user);
           store.setError(undefined);
           callback && callback(registrationResponse);
+          store.clearError();
         }
       } catch (e) {
         const error = e as AxiosError<ResponseErrorData>;
