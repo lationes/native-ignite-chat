@@ -117,6 +117,9 @@ const en = {
       placeholder: 'Select chat room.'
     }
   },
+  bannedScreen: {
+    title: 'You were banned due to reason below. Please contact administrator!'
+  },
   adminPanel: {
     title: 'Admin Panel',
     accordionListTitle: 'Actions',

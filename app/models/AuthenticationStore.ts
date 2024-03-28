@@ -22,6 +22,8 @@ export const AuthenticationStoreModel = types
     refreshToken: types.maybe(types.string),
     authenticatedUserId: types.maybe(types.number),
     authenticatedUserRole: types.maybe(types.string),
+    userBanned: types.maybe(types.boolean),
+    banReason: types.maybe(types.string),
     authData: types.optional(AuthorizationDataModel, { email: '', password: ''}),
     error: types.maybe(types.string),
     loading:  types.optional(types.frozen<LoadingInfo>(), { action: '', loading: false }),
@@ -40,6 +42,8 @@ export const AuthenticationStoreModel = types
     setAuthenticatedUser(user: User) {
       store.authenticatedUserId = user.id;
       store.authenticatedUserRole = user.role;
+      store.userBanned = user.banned || false;
+      store.banReason = user.banReason || '';
     },
     setAuthData(data: AuthorizationData) {
       store.authData = data;
@@ -64,6 +68,9 @@ export const AuthenticationStoreModel = types
   .views((store) => ({
     get isAuthenticated() {
       return !!store.accessToken
+    },
+    get isBanned() {
+      return !!store.userBanned
     },
     get isAdmin() {
       return store.authenticatedUserRole === 'ADMIN';

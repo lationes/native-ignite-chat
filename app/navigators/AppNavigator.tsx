@@ -12,7 +12,7 @@ import {
 } from "@react-navigation/native"
 import { createNativeStackNavigator, NativeStackScreenProps } from "@react-navigation/native-stack"
 import { observer } from "mobx-react-lite"
-import React, { useEffect } from "react"
+import React, { useEffect, useMemo } from "react"
 import { useColorScheme } from "react-native"
 import * as Screens from "app/screens"
 import Config from "../config"
@@ -36,6 +36,7 @@ import { colors } from "app/theme"
  */
 export type AppStackParamList = {
   Welcome: undefined
+  Banned: undefined
   Login: undefined
   Chat: NavigatorScreenParams<ChatTabParamList>
   // 🔥 Your screens go here
@@ -58,7 +59,7 @@ const Stack = createNativeStackNavigator<AppStackParamList>()
 
 const AppStack = observer(function AppStack() {
   const {
-    authenticationStore: { isAuthenticated, authenticatedUserId },
+    authenticationStore: { isAuthenticated, isBanned, authenticatedUserId },
     chatRoomStore: { fetchAvailableChatRooms },
     userStore: { getUsers },
     addRequestStore: { getAddRequestsByUserId },
@@ -79,9 +80,17 @@ const AppStack = observer(function AppStack() {
     >
       {isAuthenticated ? (
         <>
-          <Stack.Screen name="Welcome" component={Screens.WelcomeScreen} />
+          { isBanned ? (
+            <>
+              <Stack.Screen name="Banned" component={Screens.BannedScreen} />
+            </>
+          ) : (
+            <>
+              <Stack.Screen name="Welcome" component={Screens.WelcomeScreen} />
 
-          <Stack.Screen name="Chat" component={ChatNavigator} />
+              <Stack.Screen name="Chat" component={ChatNavigator} />
+            </>
+          )}
         </>
       ) : (
         <>

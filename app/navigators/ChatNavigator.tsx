@@ -96,17 +96,19 @@ export function ChatNavigator() {
         }}
       />
 
-      <Tab.Screen
-        name="AdminPanel"
-        component={AdminPanel}
-        options={{
-          tabBarAccessibilityLabel: translate("chatNavigator.adminTab"),
-          tabBarLabel: translate("chatNavigator.adminTab"),
-          tabBarIcon: ({ focused }) => (
-            <MaterialIcons name={'admin-panel-settings'} color={focused ? colors.tint : undefined} size={30} />
-          ),
-        }}
-      />
+      { isAdmin &&
+        <Tab.Screen
+          name="AdminPanel"
+          component={AdminPanel}
+          options={{
+            tabBarAccessibilityLabel: translate("chatNavigator.adminTab"),
+            tabBarLabel: translate("chatNavigator.adminTab"),
+            tabBarIcon: ({ focused }) => (
+              <MaterialIcons name={'admin-panel-settings'} color={focused ? colors.tint : undefined} size={30} />
+            ),
+          }}
+        />
+      }
 
     </Tab.Navigator>
   )
