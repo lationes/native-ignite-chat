@@ -66,6 +66,9 @@ buck-out/
 # VS Code
 .vscode
 
+# Enviroment variables
+.env
+
 # Expo
 .expo/*
 bin/Exponent.app
