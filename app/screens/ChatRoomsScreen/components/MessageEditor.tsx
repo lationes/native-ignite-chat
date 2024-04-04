@@ -5,6 +5,7 @@ import { Button, Icon, TextField } from "app/components"
 import React, { useEffect, useMemo, useState } from "react"
 import { useStores } from "app/models"
 import { KeyValueModel } from "app/types/common.types"
+import ModalBasic from "app/components/ModalBasic"
 
 interface IProps {
   messageId: number | null;
@@ -74,44 +75,51 @@ export const MessageEditor = observer(function MessageEditor({
   }
 
   return (
-    <View style={$editorContainer}>
+    <>
       { !open ? (
         <Button onPress={handleOpen} style={$IconButton}>
           <Icon icon={'chat'} size={16} />
         </Button>
       ) : null}
       { open ? (
-        <View style={$editorFieldsContainer}>
-          <TextField
-            autoFocus
-            value={textContent}
-            multiline
-            onChangeText={handleSetTextContent}
-            autoCapitalize="none"
-            autoComplete="off"
-            autoCorrect={false}
-            keyboardType="default"
-            placeholderTx="chatRoomScreen.messageEditor.inputPlaceholder"
-            helper={errors?.content ? errors.content : ''}
-            status={errors?.content ? 'error' : undefined}
-          />
-          <Button
-            testID="message-editor-button"
-            tx={"chatRoomScreen.messageEditor.saveButtonTitle"}
-            style={$tapButton}
-            preset="reversed"
-            onPress={handleMessage}
-          />
-          <Button
-            testID="message-editor-cancel-button"
-            tx={"common.cancel"}
-            style={$tapButton}
-            preset="outline"
-            onPress={handleClose}
-          />
-        </View>
+        <ModalBasic
+          open={open}
+          close={handleClose}
+        >
+          <View style={$modalContainer}>
+            <View style={$editorFieldsContainer}>
+              <TextField
+                autoFocus
+                value={textContent}
+                multiline
+                onChangeText={handleSetTextContent}
+                autoCapitalize="none"
+                autoComplete="off"
+                autoCorrect={false}
+                keyboardType="default"
+                placeholderTx="chatRoomScreen.messageEditor.inputPlaceholder"
+                helper={errors?.content ? errors.content : ''}
+                status={errors?.content ? 'error' : undefined}
+              />
+              <Button
+                testID="message-editor-button"
+                tx={"chatRoomScreen.messageEditor.saveButtonTitle"}
+                style={$tapButton}
+                preset="reversed"
+                onPress={handleMessage}
+              />
+              <Button
+                testID="message-editor-cancel-button"
+                tx={"common.cancel"}
+                style={$tapButton}
+                preset="outline"
+                onPress={handleClose}
+              />
+            </View>
+          </View>
+        </ModalBasic>
       ) : null }
-    </View>
+    </>
   )
 })
 
@@ -121,14 +129,15 @@ const $IconButton: ViewStyle = {
   backgroundColor: colors.palette.primary500,
   borderRadius: 28,
   marginLeft: "auto",
+  position: "absolute",
+  bottom: 0,
+  right: 0,
 }
 
-const $editorContainer: ViewStyle = {
-  display: 'flex',
-  justifyContent: 'space-between',
-  position: 'absolute',
-  bottom: 0,
+const $modalContainer: ViewStyle = {
   width: '100%',
+  position: 'absolute',
+  bottom: 20,
   paddingHorizontal: spacing.md,
 }
 

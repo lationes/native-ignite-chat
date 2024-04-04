@@ -146,6 +146,7 @@ export const ChatRoomScreen: FC<ChatTabScreenProps<"ChatRooms">> = observer(
 
 const $screenContainer: ViewStyle = {
   flex: 1,
+  width: '100%',
   paddingHorizontal: spacing.sm,
 }
 
