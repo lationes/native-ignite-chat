@@ -65,7 +65,7 @@ export const MessageCard = observer(function MessageCard({
       return { uri: imageUrl };
     }
 
-    return require('../../../../assets/images/profile-placeholder.png');
+    return require('../../../../assets/images/avatarPlaceholder.png');
   }, [author])
 
   const hasAccessToDelete = useMemo(() => {

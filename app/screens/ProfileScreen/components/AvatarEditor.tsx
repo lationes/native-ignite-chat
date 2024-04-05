@@ -18,7 +18,7 @@ const AvatarEditor = observer(({
       return { uri: imageUrl};
     }
 
-    return require('../../../../assets/images/profile-placeholder.png');
+    return require('../../../../assets/images/avatarPlaceholder.png');
   }, [imageUrl])
 
   return (
