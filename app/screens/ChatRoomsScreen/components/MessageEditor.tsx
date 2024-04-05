@@ -130,8 +130,8 @@ const $IconButton: ViewStyle = {
   borderRadius: 28,
   marginLeft: "auto",
   position: "absolute",
-  bottom: 0,
-  right: 0,
+  bottom: spacing.xs,
+  right: spacing.md,
 }
 
 const $modalContainer: ViewStyle = {
