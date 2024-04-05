@@ -50,8 +50,8 @@ export const CreateAddRequestPage: FC<IProps> = observer(
     }, [userSuggestionsProxy, authenticatedUserId]);
 
     const chatRoomDropdownItems = useMemo(() => {
-      if (chatRoomSuggestionsProxy) {
-        return chatRoomSuggestionsProxy.map(chatRoom => {
+      if (chatRoomSuggestionsProxy && selectedUserId) {
+        return chatRoomSuggestionsProxy.filter(r => r.users.every(u => u.userId !== selectedUserId)).map(chatRoom => {
           return {
             id: chatRoom.id,
             title: chatRoom.title,
@@ -60,7 +60,7 @@ export const CreateAddRequestPage: FC<IProps> = observer(
       }
 
       return null;
-    }, [chatRoomSuggestionsProxy]);
+    }, [chatRoomSuggestionsProxy, selectedUserId]);
 
     useEffect(() => {
       if (authenticatedUserId) {
@@ -102,6 +102,8 @@ export const CreateAddRequestPage: FC<IProps> = observer(
       }
     }
 
+    console.log(chatRoomDropdownItems)
+
     return (
       <Screen
         preset="fixed"
@@ -117,7 +119,7 @@ export const CreateAddRequestPage: FC<IProps> = observer(
             <Select
               labelTx={'notificationsScreen.userAutoComplete.label'}
               placeholderTx={'notificationsScreen.userAutoComplete.placeholder'}
-              dataSet={userDropdownItems}
+              data={userDropdownItems}
               selectItem={(item) => handleSelectItem(item, 'user')}
               loading={loadingUsers.action === 'get' && loadingUsers.loading}
               status={errors?.selectedUserId ? 'error' : undefined}
@@ -126,11 +128,12 @@ export const CreateAddRequestPage: FC<IProps> = observer(
             <Select
               labelTx={'notificationsScreen.chatRoomAutoComplete.label'}
               placeholderTx={'notificationsScreen.chatRoomAutoComplete.placeholder'}
-              dataSet={chatRoomDropdownItems}
+              data={chatRoomDropdownItems}
               selectItem={(item) => handleSelectItem(item, 'chatRoom')}
               loading={loadingChatRooms.action === 'getMany' && loadingChatRooms.loading}
               status={errors?.selectedChatRoomId ? 'error' : undefined}
               helper={errors?.selectedChatRoomId ? errors?.selectedUserId : undefined}
+              disabled={!selectedUserId}
             />
           </View>
           <View style={$buttonContainer}>

@@ -1,6 +1,8 @@
 import { observer } from "mobx-react-lite"
 import React, { useMemo } from "react"
 import {
+  Image,
+  ImageStyle,
   TextStyle,
   View,
   ViewStyle,
@@ -9,7 +11,7 @@ import { Button, Card, Text } from "app/components"
 import { colors, spacing } from "app/theme"
 import { useStores } from "app/models"
 import { translate } from "app/i18n"
-import { convertDateToAmericanFormat } from "app/helpers/common.helpers"
+import { convertDateToAmericanFormat, convertFileNameToLink } from "app/helpers/common.helpers"
 
 interface IProps {
   messageId: number;
@@ -56,6 +58,16 @@ export const MessageCard = observer(function MessageCard({
     return false;
   }, [authenticatedUserId, message])
 
+  const avatar = useMemo(() => {
+    const imageUrl = convertFileNameToLink(author?.avatar)
+
+    if (imageUrl) {
+      return { uri: imageUrl };
+    }
+
+    return require('../../../../assets/images/profile-placeholder.png');
+  }, [author])
+
   const hasAccessToDelete = useMemo(() => {
     if (authenticatedUserId && message) {
       return authenticatedUserId === message.authorId || isAdmin;
@@ -83,13 +95,19 @@ export const MessageCard = observer(function MessageCard({
       // onPress={handlePressCard}
       HeadingComponent={
         <View style={$metadata}>
-          <Text
-            style={$metadataText}
-            size="xxs"
-            accessibilityLabel={author?.email}
-          >
-            {author?.email}
-          </Text>
+          <View style={userInfoContainer}>
+            <Image
+              source={avatar}
+              style={$avatarImage}
+            />
+            <Text
+              style={$metadataText}
+              size="xxs"
+              accessibilityLabel={author?.email}
+            >
+              {author?.email}
+            </Text>
+          </View>
           <Text
             style={$metadataText}
             size="xxs"
@@ -138,6 +156,7 @@ const $metadata: TextStyle = {
   marginTop: spacing.xs,
   flexDirection: "column",
   justifyContent: 'space-between',
+  gap: spacing.xs,
 }
 
 const $content: ViewStyle = {
@@ -151,7 +170,25 @@ const $footer: ViewStyle = {
 
 const $metadataText: TextStyle = {
   color: colors.textDim,
+  fontSize: 12,
   marginEnd: spacing.md,
   marginBottom: spacing.xs,
 }
+
+const userInfoContainer: ViewStyle = {
+  display: "flex",
+  flexDirection: "row",
+  alignItems: "center",
+  justifyContent: "flex-start",
+  gap: spacing.md,
+}
+
+const $avatarImage: ImageStyle = {
+  borderRadius: 75,
+  width: 30,
+  height: 30,
+  borderColor: colors.palette.secondary100,
+  borderWidth: 2,
+}
+
 // #endregion

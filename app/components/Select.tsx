@@ -1,6 +1,6 @@
 import React, { FC, useMemo } from "react"
 import { View, TextStyle, StyleProp, ViewStyle, Dimensions } from "react-native"
-import SelectDropdown from "react-native-select-dropdown";
+import SelectDropdown, { SelectDropdownProps } from "react-native-select-dropdown"
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import { observer } from "mobx-react-lite"
 import { Text, TextProps } from "app/components"
@@ -8,14 +8,14 @@ import { colors, spacing } from "app/theme"
 import { translate } from "app/i18n"
 import { CommonItemModel } from "app/types/common.types"
 
-interface IProps {
+type IProps = SelectDropdownProps & {
   label?: string;
   labelTx?: TextProps["tx"];
   labelTxOptions?: TextProps["txOptions"];
   placeholder?: string;
   placeholderTx?: TextProps["tx"];
   placeholderTxOptions?: TextProps["txOptions"];
-  dataSet: CommonItemModel[] | null;
+  data: CommonItemModel[] | null;
   selectItem: (item: CommonItemModel) => void;
   onOpenSuggestionsList?: (isOpened: boolean) => void;
   loading?: boolean;
@@ -54,11 +54,9 @@ export const Select: FC<IProps> = observer(({
                                                     helperTxOptions,
                                                     HelperTextProps,
                                                     status,
-                                                    dataSet,
+                                                    data,
                                                     selectItem,
-                                                    onOpenSuggestionsList,
-                                                    loading,
-                                                    ...props
+                                                    disabled,
                                                   }) => {
 
   const labelContent = useMemo(() => {
@@ -96,10 +94,11 @@ export const Select: FC<IProps> = observer(({
       <View style={$container}>
         <Text preset={'subheading'}>{labelContent}</Text>
         <SelectDropdown
-          data={dataSet || []}
+          data={data || []}
           onSelect={(item) => {
             selectItem(item);
           }}
+          disabled={disabled}
           defaultButtonText={placeholderContent}
           buttonTextAfterSelection={(selectedItem, index) => {
             return selectedItem.title;
@@ -107,7 +106,10 @@ export const Select: FC<IProps> = observer(({
           rowTextForSelection={(item, index) => {
             return item.title;
           }}
-          buttonStyle={$dropdownBtnStyle}
+          buttonStyle={{
+            ...$dropdownBtnStyle,
+            opacity: disabled ? 0.4 : 1,
+          }}
           buttonTextStyle={dropdownBtnTxtStyle}
           renderDropdownIcon={isOpened => {
             return <FontAwesome name={isOpened ? 'chevron-up' : 'chevron-down'} color={'#444'} size={18} />;

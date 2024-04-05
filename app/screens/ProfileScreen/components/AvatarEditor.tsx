@@ -13,19 +13,19 @@ const AvatarEditor = observer(({
                                  imageUrl,
                                  onButtonPress,
 }: IProps) => {
-  const uri = useMemo(() => {
+  const avatar = useMemo(() => {
     if (imageUrl) {
-      return imageUrl;
+      return { uri: imageUrl};
     }
 
-    return '../../../../assets/images/profile-placeholder.png';
+    return require('../../../../assets/images/profile-placeholder.png');
   }, [imageUrl])
 
   return (
     <View style={$container}>
       <View style={$avatarContainer}>
         <Image
-          source={{ uri }}
+          source={avatar}
           style={$avatarImage}
         />
         <TouchableOpacity style={$editButton} onPress={onButtonPress}>
